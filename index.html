@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Diário do Tratorista SPG Oásis</title>
+    
+    <!-- Configurações PWA -->
+    <link rel="icon" type="image/png" href="https://i.imgur.com/wEozr34.png">
+    <link rel="apple-touch-icon" href="https://i.imgur.com/wEozr34.png">
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Máquinas SPG Oásis","short_name":"Tratores SPG","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#ffffff","icons":[{"src":"https://i.imgur.com/wEozr34.png","sizes":"192x192","type":"image/png"},{"src":"https://i.imgur.com/wEozr34.png","sizes":"512x512","type":"image/png"}]}'>
+    
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tratores SPG">
+    
+    <!-- Bibliotecas Externas -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        input, select, textarea { line-height: 1.5; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen pb-20 select-none">
+
+    <!-- Navbar -->
+    <div class="bg-white border-b border-slate-200 px-4 py-3 flex justify-between items-center shadow-sm sticky top-0 z-40">
+        <div class="flex items-center gap-3">
+            <img src="https://i.imgur.com/wEozr34.png" alt="Logo SPG" class="w-8 h-8 rounded-lg shadow-sm border border-slate-100">
+            <div>
+                <h1 class="text-sm font-bold text-slate-800 pb-0.5">SPG Oásis</h1>
+                <p class="text-[10px] text-slate-500 font-medium">Diário de Máquinas / Tratores</p>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <button type="button" onclick="downloadImage()" class="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xs font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95 active:bg-blue-700">
+                <i data-lucide="image" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">Baixar Imagem</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-4 flex flex-col lg:flex-row gap-8 mt-4">
+        
+        <!-- COLUNA DA ESQUERDA: CONTROLES -->
+        <div class="w-full lg:w-1/3 space-y-4">
+            
+            <!-- 1. PARÂMETROS DO TURNO -->
+            <div class="bg-white p-6 rounded shadow-sm border border-slate-200">
+                <h2 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2">
+                    <i data-lucide="settings" class="w-4 h-4 text-slate-500"></i> PARÂMETROS DO TURNO
+                </h2>
+                
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 mb-1 block uppercase">OPERADOR (TRATORISTA)</label>
+                        <select id="operatorSelect" onchange="checkOther('operatorSelect', 'operatorName'); renderReport()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                            <option value="Henrique Soares">Henrique Soares</option>
+                            <option value="Outro">Outro...</option>
+                        </select>
+                        <div id="operatorNameContainer" class="hidden relative">
+                            <input type="text" id="operatorName" oninput="renderReport()" placeholder="Digite o nome..." class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700 pr-8">
+                            <button type="button" onclick="revertToSelect('operatorSelect', 'operatorName', 'Henrique Soares'); renderReport()" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 mb-1 block uppercase">TRATOR / MÁQUINA</label>
+                        <select id="tractorSelect" onchange="checkOther('tractorSelect', 'tractorName'); renderReport()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                            <option value="Massey Ferguson 4409">Massey Ferguson 4409</option>
+                            <option value="Outro">Outro...</option>
+                        </select>
+                        <div id="tractorNameContainer" class="hidden relative">
+                            <input type="text" id="tractorName" oninput="renderReport()" placeholder="Modelo do trator" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700 pr-8">
+                            <button type="button" onclick="revertToSelect('tractorSelect', 'tractorName', 'Massey Ferguson 4409'); renderReport()" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="text-[10px] font-bold text-slate-500 mb-1 block uppercase">DATA DO SERVIÇO</label>
+                    <input type="date" id="reportDate" oninput="renderReport()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                </div>
+            </div>
+
+            <!-- 2. REGISTRO DE ATIVIDADE -->
+            <div id="formContainer" class="bg-white p-6 rounded shadow-sm border border-slate-200 transition-colors duration-300">
+                <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+                    <h2 id="formTitle" class="text-sm font-bold text-slate-700 flex items-center gap-2 uppercase">
+                        <i data-lucide="tractor" class="w-4 h-4 text-slate-500"></i> REGISTRAR ATIVIDADE
+                    </h2>
+                    <button type="button" onclick="clearTaskForm()" class="text-[10px] font-bold text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1 uppercase">
+                        <i data-lucide="x-circle" class="w-3 h-3"></i> LIMPAR
+                    </button>
+                </div>
+                
+                <form id="taskForm" onsubmit="addTask(event)" class="space-y-4">
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <!-- IDENTIFICAÇÃO (BLOCO) -->
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">LOCAL / BLOCO</label>
+                            <select id="taskLocationSelect" onchange="checkOther('taskLocationSelect', 'taskLocation')" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700 mb-2">
+                                <option value="">Selecione...</option>
+                                <option value="Bloco 1">Bloco 1</option>
+                                <option value="Bloco 2">Bloco 2</option>
+                                <option value="Bloco 3">Bloco 3</option>
+                                <option value="Bloco 4">Bloco 4</option>
+                                <option value="Bloco 5">Bloco 5</option>
+                                <option value="Bloco 6">Bloco 6</option>
+                                <option value="Bloco 7">Bloco 7</option>
+                                <option value="Bloco 8">Bloco 8</option>
+                                <option value="Bloco 9">Bloco 9</option>
+                                <option value="Bloco 10">Bloco 10</option>
+                                <option value="Bloco A">Bloco A</option>
+                                <option value="Bloco B">Bloco B</option>
+                                <option value="Bloco C">Bloco C</option>
+                                <option value="Estufa">Estufa</option>
+                                <option value="Sede / Galpão">Sede / Galpão</option>
+                                <option value="Outro">Outro...</option>
+                            </select>
+                            <div id="taskLocationContainer" class="hidden relative">
+                                <input type="text" id="taskLocation" placeholder="Especifique o local" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700 pr-8">
+                                <button type="button" onclick="revertToSelect('taskLocationSelect', 'taskLocation', '')" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- SERVIÇO REALIZADO -->
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">SERVIÇO REALIZADO</label>
+                            <select id="taskServiceSelect" onchange="checkOther('taskServiceSelect', 'taskService')" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700 mb-2">
+                                <option value="">Selecione...</option>
+                                <option value="Roçagem (Trituração)">Roçagem (Trituração)</option>
+                                <option value="Incorporação (Gradagem Pesada)">Incorporação (Gradagem Pesada)</option>
+                                <option value="Encanteiramento">Encanteiramento</option>
+                                <option value="Distribuição de Calcário e Adubo">Distribuição de Calcário e Adubo</option>
+                                <option value="Aração e Gradagem">Aração e Gradagem</option>
+                                <option value="Subsolagem">Subsolagem</option>
+                                <option value="Transporte da Colheita">Transporte da Colheita</option>
+                                <option value="Transporte de Material">Transporte de Material</option>
+                                <option value="Outro">Outro...</option>
+                            </select>
+                            <div id="taskServiceContainer" class="hidden relative">
+                                <input type="text" id="taskService" placeholder="Especifique o serviço" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700 pr-8">
+                                <button type="button" onclick="revertToSelect('taskServiceSelect', 'taskService', '')" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <!-- IMPLEMENTO UTILIZADO -->
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">IMPLEMENTO UTILIZADO</label>
+                            <select id="taskImplementSelect" onchange="checkOther('taskImplementSelect', 'taskImplement')" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                                <option value="">Selecione...</option>
+                                <option value="Grade Aradora">Grade Aradora</option>
+                                <option value="Encanteirador">Encanteirador</option>
+                                <option value="Roçadeira">Roçadeira</option>
+                                <option value="Carroceria">Carroceria</option>
+                                <option value="Outro">Outro...</option>
+                            </select>
+                            <div id="taskImplementContainer" class="hidden relative">
+                                <input type="text" id="taskImplement" placeholder="Especifique o implemento" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700 pr-8">
+                                <button type="button" onclick="revertToSelect('taskImplementSelect', 'taskImplement', '')" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- QUEM SOLICITOU -->
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">QUEM SOLICITOU?</label>
+                            <select id="taskRequesterSelect" onchange="checkOther('taskRequesterSelect', 'taskRequester')" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                                <option value="">Selecione...</option>
+                                <option value="José Marcio">José Marcio</option>
+                                <option value="Claudio Soares">Claudio Soares</option>
+                                <option value="Assis Paulo">Assis Paulo</option>
+                                <option value="Outro">Outro...</option>
+                            </select>
+                            <div id="taskRequesterContainer" class="hidden relative">
+                                <input type="text" id="taskRequester" placeholder="Nome do solicitante" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700 pr-8">
+                                <button type="button" onclick="revertToSelect('taskRequesterSelect', 'taskRequester', '')" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HORÍMETRO E ABASTECIMENTO DA TAREFA -->
+                    <div class="border border-slate-200 rounded p-3 bg-slate-50/30 mt-2">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-3 tracking-wider border-b border-slate-100 pb-1">APONTAMENTO DE HORÍMETRO E COMBUSTÍVEL</div>
+                        
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 mb-1 block uppercase">HORÍMETRO INICIAL</label>
+                                <input type="text" inputmode="numeric" id="taskStartHM" oninput="formatHMInput(this)" required placeholder="Ex: 1.540,5" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 mb-1 block uppercase">HORÍMETRO FINAL</label>
+                                <input type="text" inputmode="numeric" id="taskEndHM" oninput="formatHMInput(this)" required placeholder="Ex: 1.548,2" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 mb-1 block uppercase">COMBUSTÍVEL (LITROS) - OPCIONAL</label>
+                            <input type="text" inputmode="numeric" id="taskFuel" oninput="formatHMInput(this)" placeholder="Ex: 50,0" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                        </div>
+                    </div>
+
+                    <!-- OBSERVAÇÕES -->
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">OBSERVAÇÕES / STATUS</label>
+                        <textarea id="taskNotes" rows="2" placeholder="Algum problema com a máquina ou local?" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700 resize-none"></textarea>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded transition-all flex justify-center items-center gap-2 uppercase text-xs shadow-lg shadow-slate-900/20">
+                        <i data-lucide="plus-square" class="w-4 h-4"></i> <span>INSERIR NO RELATÓRIO</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Lista de Itens -->
+            <div class="bg-white p-6 rounded shadow-sm border border-slate-200">
+                <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+                    <h3 class="text-sm font-bold text-slate-700 uppercase">ATIVIDADES INSERIDAS</h3>
+                    <button onclick="clearAll()" class="text-[10px] font-bold text-red-500 hover:text-red-700 uppercase underline">LIMPAR LISTA</button>
+                </div>
+                <ul id="itemsList" class="space-y-2 text-sm text-slate-600">
+                    <!-- JS -->
+                </ul>
+            </div>
+        </div>
+
+        <!-- PREVIEW -->
+        <div class="w-full lg:w-2/3 flex flex-col bg-slate-200/50 p-4 rounded-3xl border border-slate-300/50 min-h-[calc(100vh-6rem)]">
+            <div id="report-card" class="w-full flex-1 flex flex-col bg-white rounded-none shadow-2xl overflow-hidden border border-slate-100 relative">
+                
+                <!-- Cabeçalho -->
+                <div class="bg-gradient-to-br from-[#1e293b] to-[#334155] p-6 text-white relative overflow-hidden flex flex-col justify-start shrink-0 gap-3 antialiased">
+                    <img src="https://i.imgur.com/wEozr34.png" alt="Logo SPG" class="absolute top-4 right-4 w-20 h-20 z-10 rounded-lg">
+                    <div class="absolute -bottom-10 -left-10 text-white/5 z-0">
+                        <i data-lucide="tractor" class="w-48 h-48"></i>
+                    </div>
+                    <div class="relative z-10 w-full pr-24"> 
+                        <h2 id="reportTitle" class="text-lg font-bold uppercase pb-1 text-white">RELATÓRIO OPERACIONAL</h2>
+                        <div class="mt-3 pt-3 border-t border-white/20">
+                             <span id="headerDateTime" class="text-xs font-medium text-slate-200 block opacity-90 tracking-wide pb-1"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumo Superior (Tratorista Info) -->
+                <div id="summaryHeader" class="bg-white shrink-0"></div>
+
+                <!-- Conteúdo -->
+                <div id="reportContent" class="flex-1 overflow-y-auto bg-slate-100/50 p-4">
+                    <div class="h-full flex items-center justify-center text-center text-slate-400 text-xs italic leading-relaxed">Nenhuma atividade registrada ainda.</div>
+                </div>
+
+                <!-- Footer Operacional -->
+                <div id="operationalFooter" class="bg-white border-t border-slate-200 p-4 shrink-0"></div>
+
+                <!-- Rodapé Marca -->
+                <div class="bg-slate-100 p-3 text-center border-t border-slate-200 shrink-0">
+                    <div class="flex justify-center items-center gap-2 text-[10px] text-slate-400 font-medium uppercase tracking-widest pb-0.5">
+                        SPG Oásis • Diário Oficial do Operador
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        let tasksData = JSON.parse(localStorage.getItem('spg_tractorData')) || [];
+        let editingIndex = -1;
+
+        lucide.createIcons();
+        setDefaultDate();
+        loadInputs();
+        
+        // --- ORDENAÇÃO AO INICIAR ---
+        sortTasksData();
+        renderList(); 
+        renderReport(); 
+
+        // --- FUNÇÕES DE DATA E HORA E FORMATAÇÃO ---
+        function formatHMInput(input) {
+            let value = input.value;
+            // Remove tudo que não for dígito ou vírgula
+            value = value.replace(/[^\d,]/g, '');
+            // Garante que tenha apenas uma vírgula
+            let parts = value.split(',');
+            if (parts.length > 2) {
+                parts = [parts[0], parts.slice(1).join('')];
+            }
+            // Formata a parte inteira com pontos para milhar
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            // Junta novamente
+            input.value = parts.join(',');
+        }
+
+        function parseHM(val) {
+            if (!val) return 0;
+            // Remove os pontos de milhar e troca vírgula por ponto para o JavaScript calcular
+            return parseFloat(String(val).replace(/\./g, '').replace(',', '.')) || 0;
+        }
+
+        function formatDisplayHM(num) {
+            // Arredonda para 1 casa decimal para evitar erros de ponto flutuante
+            const fixedNum = parseFloat(num.toFixed(1));
+            // Verifica se o número é inteiro
+            const hasDecimals = fixedNum % 1 !== 0;
+            
+            // Converte para string com formatação brasileira
+            let parts = (hasDecimals ? fixedNum.toFixed(1) : fixedNum.toString()).split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            return parts.join(',');
+        }
+
+        function setDefaultDate() {
+            const dateField = document.getElementById('reportDate');
+            if (dateField && !dateField.value) {
+                const today = new Date();
+                dateField.value = today.toISOString().split('T')[0];
+            }
+        }
+
+        function formatHeaderDate(dateString) {
+            if (!dateString) return "Data não informada";
+            const [year, month, day] = dateString.split('-');
+            const dateObj = new Date(year, month - 1, day);
+            const daysOfWeek = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+            const dayOfWeek = daysOfWeek[dateObj.getDay()];
+            return `${dayOfWeek}, ${day}/${month}/${year}`;
+        }
+
+        function updateDynamicTitle() {
+            const dateVal = document.getElementById('reportDate').value;
+            const dateStr = formatHeaderDate(dateVal);
+            document.getElementById('headerDateTime').innerText = `Data do Turno: ${dateStr}`;
+        }
+
+        function getWeekNumber(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
+        // --- STORAGE E ORDENAÇÃO ---
+        function saveData() { localStorage.setItem('spg_tractorData', JSON.stringify(tasksData)); }
+        
+        function saveInputs() {
+            const inputs = {
+                operatorSelect: document.getElementById('operatorSelect')?.value || '',
+                operatorName: document.getElementById('operatorName')?.value || '',
+                tractorSelect: document.getElementById('tractorSelect')?.value || '',
+                tractorName: document.getElementById('tractorName')?.value || '',
+                reportDate: document.getElementById('reportDate')?.value || ''
+            };
+            localStorage.setItem('spg_tractorInputs', JSON.stringify(inputs));
+        }
+        
+        function loadInputs() {
+            const saved = localStorage.getItem('spg_tractorInputs');
+            if (saved) {
+                try {
+                    const inputs = JSON.parse(saved);
+                    ['operatorSelect', 'operatorName', 'tractorSelect', 'tractorName', 'reportDate'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if(el && inputs[id]) el.value = inputs[id];
+                    });
+                    restoreFieldState('operatorSelect', 'operatorName');
+                    restoreFieldState('tractorSelect', 'tractorName');
+                } catch (e) { console.error("Erro ao carregar inputs", e); }
+            }
+        }
+
+        function checkOther(selectId, inputId) {
+            const sel = document.getElementById(selectId);
+            const inpContainer = document.getElementById(inputId + 'Container');
+            const inp = document.getElementById(inputId);
+            if (sel && sel.value === 'Outro') {
+                sel.classList.add('hidden');
+                if(inpContainer) inpContainer.classList.remove('hidden');
+                if(inp) inp.focus();
+            }
+        }
+
+        function revertToSelect(selectId, inputId, defaultVal) {
+            const sel = document.getElementById(selectId);
+            const inpContainer = document.getElementById(inputId + 'Container');
+            const inp = document.getElementById(inputId);
+            
+            if(inp) inp.value = '';
+            if(inpContainer) inpContainer.classList.add('hidden');
+            if(sel) {
+                sel.classList.remove('hidden');
+                sel.value = defaultVal;
+            }
+            lucide.createIcons();
+        }
+
+        function restoreFieldState(selectId, inputId) {
+            const sel = document.getElementById(selectId);
+            const inpContainer = document.getElementById(inputId + 'Container');
+            if (sel && sel.value === 'Outro') {
+                sel.classList.add('hidden');
+                if(inpContainer) inpContainer.classList.remove('hidden');
+            } else {
+                if(sel) sel.classList.remove('hidden');
+                if(inpContainer) inpContainer.classList.add('hidden');
+            }
+        }
+
+        function sortTasksData() {
+            // Ordena por horímetro inicial da tarefa
+            tasksData.sort((a, b) => {
+                const hmA = parseHM(a.startHM);
+                const hmB = parseHM(b.startHM);
+                return hmA - hmB;
+            });
+        }
+
+        // --- FORMULÁRIO ---
+        function clearTaskForm() {
+            ['taskLocation','taskService','taskImplement','taskRequester','taskStartHM','taskEndHM','taskFuel','taskNotes'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.value = '';
+            });
+            
+            const locSelect = document.getElementById('taskLocationSelect');
+            if (locSelect) locSelect.value = '';
+            
+            const srvSelect = document.getElementById('taskServiceSelect');
+            if (srvSelect) srvSelect.value = '';
+            
+            const impSelect = document.getElementById('taskImplementSelect');
+            if (impSelect) impSelect.value = '';
+            
+            const reqSelect = document.getElementById('taskRequesterSelect');
+            if (reqSelect) reqSelect.value = '';
+
+            restoreFieldState('taskLocationSelect', 'taskLocation');
+            restoreFieldState('taskServiceSelect', 'taskService');
+            restoreFieldState('taskImplementSelect', 'taskImplement');
+            restoreFieldState('taskRequesterSelect', 'taskRequester');
+            editingIndex = -1;
+            
+            const btn = document.getElementById('submitBtn');
+            if(btn) {
+                btn.innerHTML = '<i data-lucide="plus-square" class="w-4 h-4"></i> <span>INSERIR NO RELATÓRIO</span>';
+                btn.classList.replace('bg-blue-600', 'bg-slate-800');
+                btn.classList.replace('hover:bg-blue-700', 'hover:bg-slate-900');
+            }
+            const titleEl = document.getElementById('formTitle');
+            if(titleEl) {
+                titleEl.innerHTML = '<i data-lucide="tractor" class="w-4 h-4 text-slate-500"></i> REGISTRAR ATIVIDADE';
+            }
+            const formContainer = document.getElementById('formContainer');
+            if(formContainer) formContainer.classList.remove('border-blue-300', 'ring-2', 'ring-blue-100');
+            
+            lucide.createIcons();
+        }
+
+        function addTask(e) {
+            e.preventDefault();
+            
+            const locSel = document.getElementById('taskLocationSelect')?.value || '';
+            const srvSel = document.getElementById('taskServiceSelect')?.value || '';
+            const impSel = document.getElementById('taskImplementSelect')?.value || '';
+            const reqSel = document.getElementById('taskRequesterSelect')?.value || '';
+            
+            const location = locSel === 'Outro' ? (document.getElementById('taskLocation')?.value || 'Não informado') : (locSel || 'Não informado');
+            const service = srvSel === 'Outro' ? (document.getElementById('taskService')?.value || 'Não informado') : (srvSel || 'Não informado');
+            const implement = impSel === 'Outro' ? (document.getElementById('taskImplement')?.value || 'Não informado') : (impSel || 'Não informado');
+            const requester = reqSel === 'Outro' ? (document.getElementById('taskRequester')?.value || 'Não informado') : (reqSel || 'Não informado');
+
+            const item = {
+                location: location,
+                service: service,
+                implement: implement,
+                requester: requester,
+                startHM: document.getElementById('taskStartHM')?.value || '',
+                endHM: document.getElementById('taskEndHM')?.value || '',
+                fuel: document.getElementById('taskFuel')?.value || '',
+                notes: document.getElementById('taskNotes')?.value || ''
+            };
+
+            if (editingIndex >= 0) tasksData[editingIndex] = item;
+            else tasksData.push(item);
+            
+            sortTasksData();
+            saveData();
+            clearTaskForm();
+            renderReport();
+            renderList();
+        }
+
+        function editItem(index) {
+            const item = tasksData[index];
+            editingIndex = index;
+            
+            const itemLocation = item.location === 'Não informado' ? '' : item.location;
+            const knownLocations = ['Bloco 1', 'Bloco 2', 'Bloco 3', 'Bloco 4', 'Bloco 5', 'Bloco 6', 'Bloco 7', 'Bloco 8', 'Bloco 9', 'Bloco 10', 'Bloco A', 'Bloco B', 'Bloco C', 'Estufa', 'Sede / Galpão'];
+            const taskLocationSelect = document.getElementById('taskLocationSelect');
+            const taskLocation = document.getElementById('taskLocation');
+
+            if (taskLocationSelect && taskLocation) {
+                if (itemLocation === '') {
+                    taskLocationSelect.value = '';
+                    taskLocation.value = '';
+                } else if (knownLocations.includes(itemLocation)) {
+                    taskLocationSelect.value = itemLocation;
+                    taskLocation.value = '';
+                } else {
+                    taskLocationSelect.value = 'Outro';
+                    taskLocation.value = itemLocation;
+                }
+                restoreFieldState('taskLocationSelect', 'taskLocation');
+            }
+
+            const itemService = item.service === 'Não informado' ? '' : item.service;
+            const knownServices = [
+                'Roçagem (Trituração)', 'Incorporação (Gradagem Pesada)', 'Encanteiramento',
+                'Distribuição de Calcário e Adubo', 'Aração e Gradagem', 'Subsolagem',
+                'Transporte da Colheita', 'Transporte de Material'
+            ];
+            const taskServiceSelect = document.getElementById('taskServiceSelect');
+            const taskService = document.getElementById('taskService');
+
+            if(taskServiceSelect && taskService) {
+                if (itemService === '') {
+                    taskServiceSelect.value = '';
+                    taskService.value = '';
+                } else if (knownServices.includes(itemService)) {
+                    taskServiceSelect.value = itemService;
+                    taskService.value = '';
+                } else {
+                    taskServiceSelect.value = 'Outro';
+                    taskService.value = itemService;
+                }
+                restoreFieldState('taskServiceSelect', 'taskService');
+            }
+            
+            const itemImplement = item.implement === 'Não informado' ? '' : item.implement;
+            const knownImplements = ['Grade Aradora', 'Encanteirador', 'Roçadeira', 'Carroceria'];
+            const taskImplementSelect = document.getElementById('taskImplementSelect');
+            const taskImplement = document.getElementById('taskImplement');
+
+            if(taskImplementSelect && taskImplement) {
+                if (itemImplement === '') {
+                    taskImplementSelect.value = '';
+                    taskImplement.value = '';
+                } else if (knownImplements.includes(itemImplement)) {
+                    taskImplementSelect.value = itemImplement;
+                    taskImplement.value = '';
+                } else {
+                    taskImplementSelect.value = 'Outro';
+                    taskImplement.value = itemImplement;
+                }
+                restoreFieldState('taskImplementSelect', 'taskImplement');
+            }
+
+            const itemRequester = item.requester === 'Não informado' ? '' : item.requester;
+            const knownRequesters = ['José Marcio', 'Claudio Soares', 'Assis Paulo'];
+            const taskRequesterSelect = document.getElementById('taskRequesterSelect');
+            const taskRequester = document.getElementById('taskRequester');
+
+            if(taskRequesterSelect && taskRequester) {
+                if (itemRequester === '') {
+                    taskRequesterSelect.value = '';
+                    taskRequester.value = '';
+                } else if (knownRequesters.includes(itemRequester)) {
+                    taskRequesterSelect.value = itemRequester;
+                    taskRequester.value = '';
+                } else {
+                    taskRequesterSelect.value = 'Outro';
+                    taskRequester.value = itemRequester;
+                }
+                restoreFieldState('taskRequesterSelect', 'taskRequester');
+            }
+            
+            const startHMEl = document.getElementById('taskStartHM');
+            if(startHMEl) startHMEl.value = item.startHM || '';
+            
+            const endHMEl = document.getElementById('taskEndHM');
+            if(endHMEl) endHMEl.value = item.endHM || '';
+            
+            const fuelEl = document.getElementById('taskFuel');
+            if(fuelEl) fuelEl.value = item.fuel || '';
+            
+            const notesEl = document.getElementById('taskNotes');
+            if(notesEl) notesEl.value = item.notes || '';
+
+            const btn = document.getElementById('submitBtn');
+            if(btn) {
+                btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> <span>SALVAR ALTERAÇÕES</span>';
+                btn.classList.replace('bg-slate-800', 'bg-blue-600');
+                btn.classList.replace('hover:bg-slate-900', 'hover:bg-blue-700');
+            }
+            
+            const titleEl = document.getElementById('formTitle');
+            if(titleEl) titleEl.innerHTML = '<i data-lucide="pencil" class="w-4 h-4 text-blue-600"></i> EDITANDO ATIVIDADE';
+            
+            const formContainer = document.getElementById('formContainer');
+            if(formContainer) {
+                formContainer.classList.add('border-blue-300', 'ring-2', 'ring-blue-100');
+                formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            
+            renderList();
+            lucide.createIcons();
+        }
+
+        function removeItem(index) {
+            if (editingIndex === index) clearTaskForm();
+            else if (editingIndex > index) editingIndex--;
+            tasksData.splice(index, 1);
+            saveData();
+            renderReport();
+            renderList();
+        }
+
+        function clearAll() {
+            if(confirm('Limpar todas as atividades registradas?')) {
+                tasksData = [];
+                saveData();
+                clearTaskForm();
+                renderReport();
+                renderList();
+            }
+        }
+
+        function renderList() {
+            const list = document.getElementById('itemsList');
+            if(!list) return;
+            
+            list.innerHTML = tasksData.length ? '' : '<li class="text-center text-slate-400 italic py-2">Nenhuma atividade registrada.</li>';
+            tasksData.forEach((item, index) => {
+                const active = index === editingIndex ? 'border-blue-400 bg-blue-50 ring-1' : 'border-slate-100 bg-slate-50';
+                list.innerHTML += `
+                    <li class="flex justify-between items-center p-2 rounded border ${active} transition-all">
+                        <div class="flex flex-col">
+                            <span class="font-bold text-slate-700 text-xs pb-0.5">${item.location}</span>
+                            <span class="text-[10px] text-slate-500 pb-0.5">${item.service} (HM: ${item.startHM || '-'} - ${item.endHM || '-'})</span>
+                        </div>
+                        <div class="flex items-center">
+                            <button onclick="editItem(${index})" class="text-blue-500 hover:bg-blue-100 p-1.5 rounded-md mr-1"><i data-lucide="pencil" width="14"></i></button>
+                            <button onclick="removeItem(${index})" class="text-red-500 hover:bg-red-100 p-1.5 rounded-md"><i data-lucide="trash-2" width="14"></i></button>
+                        </div>
+                    </li>`;
+            });
+            lucide.createIcons();
+        }
+
+        function renderReport() {
+            saveInputs();
+            updateDynamicTitle();
+            const container = document.getElementById('reportContent');
+            const summaryHeader = document.getElementById('summaryHeader');
+            const footer = document.getElementById('operationalFooter');
+
+            if(!container || !summaryHeader || !footer) return;
+
+            const opSel = document.getElementById('operatorSelect')?.value || '';
+            const opName = opSel === 'Outro' ? (document.getElementById('operatorName')?.value || '-') : opSel;
+            
+            const tracSel = document.getElementById('tractorSelect')?.value || '';
+            const tracName = tracSel === 'Outro' ? (document.getElementById('tractorName')?.value || '-') : tracSel;
+
+            // Renderiza o cabeçalho de resumo
+            summaryHeader.innerHTML = `
+                <div class="bg-white border-b border-slate-200 p-4 flex justify-around items-center">
+                    <div class="flex flex-col items-center w-1/2 px-2">
+                        <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1 mb-1 pb-0.5">Operador</span>
+                        <span class="text-sm font-extrabold text-slate-800 text-center pb-0.5">${opName}</span>
+                    </div>
+                    <div class="w-px h-10 bg-slate-200"></div>
+                    <div class="flex flex-col items-center w-1/2 px-2">
+                        <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1 mb-1 pb-0.5">Máquina/Trator</span>
+                        <span class="text-sm font-extrabold text-slate-800 text-center pb-0.5">${tracName}</span>
+                    </div>
+                </div>`;
+
+            if (!tasksData.length) {
+                container.innerHTML = `<div class="h-full flex items-center justify-center text-center text-slate-400 text-xs italic">Nenhuma atividade adicionada no formulário.</div>`;
+            } else {
+                container.innerHTML = '';
+                tasksData.forEach((item, index) => {
+                    let hmDiff = '-';
+                    const startVal = parseHM(item.startHM);
+                    const endVal = parseHM(item.endHM);
+                    
+                    if (item.startHM && item.endHM && !isNaN(startVal) && !isNaN(endVal)) {
+                        hmDiff = formatDisplayHM(endVal - startVal);
+                    }
+                    
+                    container.innerHTML += `
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-4 last:mb-0">
+                        <!-- Card Header -->
+                        <div class="bg-slate-50/80 px-4 py-3 border-b border-slate-100 flex items-center gap-2">
+                            <div class="text-sm font-extrabold text-slate-800 shrink-0">
+                                ${index + 1}.
+                            </div>
+                            <div class="flex flex-col flex-1 overflow-hidden">
+                                <span class="text-sm font-extrabold text-slate-800 block pb-0.5 break-words">${item.location}</span>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block pb-0.5 break-words">${item.service}</span>
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="p-4">
+                            <!-- Implement & Requester -->
+                            <div class="flex gap-3 mb-4">
+                                <div class="flex-1 bg-slate-50 rounded-lg p-2.5 border border-slate-100 overflow-hidden">
+                                    <span class="text-[8px] text-slate-400 uppercase tracking-wider font-bold block mb-0.5 pb-0.5">Implemento Utilizado</span>
+                                    <span class="text-xs font-bold text-slate-700 block pb-0.5 break-words">${item.implement}</span>
+                                </div>
+                                <div class="flex-1 bg-slate-50 rounded-lg p-2.5 border border-slate-100 overflow-hidden">
+                                    <span class="text-[8px] text-slate-400 uppercase tracking-wider font-bold block mb-0.5 pb-0.5">Solicitado Por</span>
+                                    <span class="text-xs font-bold text-slate-700 block pb-0.5 break-words">${item.requester}</span>
+                                </div>
+                            </div>
+
+                            <!-- Horimetro -->
+                            <div class="flex items-center justify-between bg-white border border-slate-200 rounded-lg p-3">
+                                <div class="flex flex-col items-center flex-1">
+                                    <span class="text-[8px] uppercase font-bold text-slate-400 tracking-wider pb-0.5">H. Inicial</span>
+                                    <span class="font-extrabold text-sm text-slate-700 mt-0.5 pb-0.5 block">${item.startHM || '-'}</span>
+                                </div>
+                                <div class="text-slate-300 px-2"><i data-lucide="arrow-right" class="w-4 h-4"></i></div>
+                                <div class="flex flex-col items-center flex-1">
+                                    <span class="text-[8px] uppercase font-bold text-slate-400 tracking-wider pb-0.5">H. Final</span>
+                                    <span class="font-extrabold text-sm text-slate-700 mt-0.5 pb-0.5 block">${item.endHM || '-'}</span>
+                                </div>
+                                <div class="w-px h-8 bg-slate-200 mx-2"></div>
+                                <div class="flex flex-col items-center flex-1">
+                                    <span class="text-[8px] uppercase font-bold text-blue-500 tracking-wider pb-0.5">Total HM</span>
+                                    <span class="font-extrabold text-sm text-blue-700 mt-0.5 pb-0.5 block">${hmDiff}</span>
+                                </div>
+                            </div>
+
+                            <!-- Fuel (Conditional) -->
+                            ${item.fuel ? `
+                            <div class="mt-3 flex items-center justify-between bg-amber-50/60 border border-amber-100/80 rounded-lg p-2.5 px-3">
+                                <div class="flex items-center gap-2 text-amber-600">
+                                    <i data-lucide="fuel" class="w-4 h-4"></i>
+                                    <span class="text-[9px] uppercase font-bold tracking-wider pb-0.5">Combustível</span>
+                                </div>
+                                <span class="font-extrabold text-xs text-amber-700 pb-0.5 block">${item.fuel} Litros</span>
+                            </div>
+                            ` : ''}
+
+                            <!-- Notes (Conditional) -->
+                            ${item.notes ? `
+                            <div class="mt-3 text-[10px] text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                                <strong class="text-slate-600 uppercase tracking-wider text-[9px] block mb-0.5 pb-0.5">Observações:</strong> 
+                                <span class="block pb-0.5">${item.notes}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>`;
+                });
+            }
+
+            // Renderiza o footer operacional (Total HM Geral e Diesel)
+            let totalHM = 0;
+            let totalFuel = 0;
+            tasksData.forEach(item => {
+                const startVal = parseHM(item.startHM);
+                const endVal = parseHM(item.endHM);
+                if (item.startHM && item.endHM && !isNaN(startVal) && !isNaN(endVal)) {
+                    totalHM += (endVal - startVal);
+                }
+                const fuelVal = parseHM(item.fuel);
+                if (item.fuel && !isNaN(fuelVal)) {
+                    totalFuel += fuelVal;
+                }
+            });
+
+            if (totalHM > 0 || totalFuel > 0) {
+                footer.style.display = 'block';
+                let footerHtml = `<div class="grid grid-cols-${totalHM > 0 && totalFuel > 0 ? '2' : '1'} gap-3">`;
+                
+                if (totalHM > 0) {
+                    footerHtml += `
+                        <div class="flex flex-col items-center justify-center bg-slate-50 border border-slate-200 rounded-lg p-3">
+                            <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1 text-center pb-0.5">TOTAL HM (DIA)</span>
+                            <span class="text-slate-900 font-extrabold text-lg pb-0.5 block">${formatDisplayHM(totalHM)}</span>
+                        </div>`;
+                }
+                
+                if (totalFuel > 0) {
+                    footerHtml += `
+                        <div class="flex flex-col items-center justify-center bg-blue-50 border border-blue-200 rounded-lg p-3">
+                            <span class="text-[9px] font-bold text-blue-500 uppercase tracking-widest mb-1 text-center pb-0.5">TOTAL COMBUSTÍVEL (DIA)</span>
+                            <span class="text-blue-900 font-extrabold text-lg pb-0.5 block">${formatDisplayHM(totalFuel)} L</span>
+                        </div>`;
+                }
+                
+                footerHtml += `</div>`;
+                footer.innerHTML = footerHtml;
+            } else {
+                footer.style.display = 'none';
+                footer.innerHTML = ``;
+            }
+
+            lucide.createIcons();
+        }
+
+        async function downloadImage() {
+            const element = document.getElementById('report-card');
+            const btnSpan = document.querySelector('button[onclick="downloadImage()"] span');
+            const originalText = btnSpan ? btnSpan.innerText : 'Baixar Imagem';
+            if (btnSpan) btnSpan.innerText = "Gerando Imagem...";
+
+            try {
+                const options = {
+                    scale: 3,
+                    useCORS: true, 
+                    allowTaint: true,
+                    scrollY: -window.scrollY,
+                    backgroundColor: '#ffffff', 
+                    onclone: (doc) => {
+                        const el = doc.getElementById('report-card');
+                        const content = doc.getElementById('reportContent');
+                        if (el) { 
+                            el.style.width = '450px'; 
+                            el.style.maxWidth = '450px';
+                            el.style.margin = '0'; 
+                            el.style.boxShadow = 'none';
+                            el.style.borderRadius = '0';
+                            el.style.border = 'none';
+                        }
+                        if (content) { 
+                            content.style.height = 'auto'; 
+                            content.style.overflow = 'visible'; 
+                            content.style.maxHeight = 'none';
+                        }
+                    }
+                };
+
+                const canvas = await html2canvas(element, options);
+                const imgData = canvas.toDataURL('image/png');
+                
+                const dateVal = document.getElementById('reportDate')?.value || '';
+                let dateStr = 'Data_Indefinida';
+                let weekNumber = getWeekNumber(new Date());
+                
+                if (dateVal) {
+                    dateStr = dateVal.split('-').reverse().join('-');
+                    const [y, m, d] = dateVal.split('-');
+                    weekNumber = getWeekNumber(new Date(y, m - 1, d));
+                }
+                
+                const opSel = document.getElementById('operatorSelect')?.value || '';
+                const operator = opSel === 'Outro' ? (document.getElementById('operatorName')?.value || 'Tratorista') : opSel;
+                
+                const filename = `Relatorio Operacional - ${operator} - ${dateStr} - Semana ${weekNumber}.png`;
+                
+                const link = document.createElement('a');
+                link.href = imgData;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (err) {
+                console.error("Erro ao gerar imagem:", err);
+            } finally {
+                if (btnSpan) btnSpan.innerText = originalText;
+            }
+        }
+    </script>
+</body>
+</html>
