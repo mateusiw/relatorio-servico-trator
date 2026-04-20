@@ -31,6 +31,9 @@
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen pb-20 select-none">
 
+    <!-- Container para Toasts (Mensagens flutuantes) -->
+    <div id="toastContainer" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 w-max max-w-[90vw]"></div>
+
     <!-- Navbar -->
     <div class="bg-white border-b border-slate-200 px-4 py-3 flex justify-between items-center shadow-sm sticky top-0 z-40">
         <div class="flex items-center gap-3">
@@ -41,9 +44,9 @@
             </div>
         </div>
         <div class="flex gap-2">
-            <button type="button" onclick="downloadImage()" class="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold shadow-lg shadow-green-600/20 transition-all active:scale-95 active:bg-green-800">
-                <i data-lucide="image" class="w-4 h-4"></i>
-                <span class="hidden sm:inline">Baixar Imagem</span>
+            <button type="button" onclick="abrirModalConfirmacao()" id="btnFinalizar" class="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold shadow-lg shadow-green-600/20 transition-all active:scale-95 active:bg-green-800">
+                <i data-lucide="send" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">Finalizar Relatório</span>
             </button>
         </div>
     </div>
@@ -178,7 +181,7 @@
                             <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">QUEM SOLICITOU?</label>
                             <select id="taskRequesterSelect" onchange="checkOther('taskRequesterSelect', 'taskRequester')" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
                                 <option value="">Selecione...</option>
-                                <option value="José Marcio">José Marcio</option>
+                                <option value="José Márcio">José Márcio</option>
                                 <option value="Claudio Soares">Claudio Soares</option>
                                 <option value="Assis Paulo">Assis Paulo</option>
                                 <option value="Outro">Outro...</option>
@@ -271,6 +274,25 @@
                     </div>
                 </div>
 
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div id="modalConfirmacao" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform scale-95 transition-transform duration-300" id="modalConfirmacaoContent">
+            <div class="p-6">
+                <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-4 mx-auto">
+                    <i data-lucide="alert-circle" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 text-center mb-2">Conferiu as informações?</h3>
+                <p class="text-sm text-slate-500 text-center mb-6">Se os dados estiverem corretos, toque em "Enviar" para salvar na planilha e compartilhar o relatório via WhatsApp.</p>
+                <div class="flex gap-3">
+                    <button onclick="fecharModalConfirmacao()" class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-bold transition-colors">Voltar</button>
+                    <button onclick="processarFinalizacao()" class="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-green-600/20 transition-colors flex justify-center items-center gap-2">
+                        <i data-lucide="check" class="w-4 h-4"></i> Enviar
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -551,7 +573,7 @@
                 restoreFieldState('taskImplementSelect', 'taskImplement');
             }
             const itemRequester = item.requester === 'Não informado' ? '' : item.requester;
-            const knownRequesters = ['José Marcio', 'Claudio Soares', 'Assis Paulo'];
+            const knownRequesters = ['José Márcio', 'Claudio Soares', 'Assis Paulo'];
             const taskRequesterSelect = document.getElementById('taskRequesterSelect');
             const taskRequester = document.getElementById('taskRequester');
             if(taskRequesterSelect && taskRequester) {
@@ -756,12 +778,93 @@
             lucide.createIcons();
         }
 
-        async function downloadImage() {
-            const element = document.getElementById('report-card');
-            const btnSpan = document.querySelector('button[onclick="downloadImage()"] span');
-            const originalText = btnSpan ? btnSpan.innerText : 'Baixar Imagem';
-            if (btnSpan) btnSpan.innerText = "Gerando Imagem...";
+        // --- SISTEMA DE NOTIFICAÇÕES (TOAST) ---
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = `px-4 py-3 rounded-lg shadow-xl text-xs font-bold text-white transition-opacity duration-300 text-center ${isError ? 'bg-red-500 shadow-red-500/20' : 'bg-slate-800 shadow-slate-900/20'}`;
+            toast.innerText = message;
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // --- FLUXO DE FINALIZAÇÃO (PLANILHA + WHATSAPP) ---
+        function abrirModalConfirmacao() {
+            if (tasksData.length === 0) {
+                showToast("Não há atividades registradas para enviar!", true);
+                return;
+            }
+            const modal = document.getElementById('modalConfirmacao');
+            const content = document.getElementById('modalConfirmacaoContent');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            // Timeout curto para permitir que o display block aconteça antes da animação de opacidade
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function fecharModalConfirmacao() {
+            const modal = document.getElementById('modalConfirmacao');
+            const content = document.getElementById('modalConfirmacaoContent');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        async function processarFinalizacao() {
+            fecharModalConfirmacao();
+
+            const btnFinalizar = document.getElementById('btnFinalizar');
+            const originalText = btnFinalizar.innerHTML;
+            
+            // Estado de carregamento
+            btnFinalizar.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> <span class="hidden sm:inline">Salvando...</span>';
+            btnFinalizar.disabled = true;
+            btnFinalizar.classList.add('opacity-75', 'cursor-not-allowed');
+            lucide.createIcons();
+
             try {
+                // 1. COLETAR DADOS E ENVIAR PARA A PLANILHA
+                const opSel = document.getElementById('operatorSelect')?.value || '';
+                const operador = opSel === 'Outro' ? (document.getElementById('operatorName')?.value || 'Não informado') : opSel;
+                const tracSel = document.getElementById('tractorSelect')?.value || '';
+                const trator = tracSel === 'Outro' ? (document.getElementById('tractorName')?.value || 'Não informado') : tracSel;
+                const dataServico = document.getElementById('reportDate')?.value || '';
+                
+                const payload = {
+                    dataServico: dataServico,
+                    operador: operador,
+                    trator: trator,
+                    tarefas: tasksData
+                };
+
+                const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTUpCYBkaz-8Hcrt0KcYmThsix2bC2MNYDtR6dr0U1s8gQ6_gigKsJS_UPDdSZDGs_/exec";
+                
+                try {
+                    // O modo 'no-cors' previne o erro "Failed to Fetch" em ambientes restritos, despachando os dados sem esperar ler o JSON de resposta
+                    await fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        body: JSON.stringify(payload),
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                    });
+                } catch (planilhaError) {
+                    console.error("Erro na planilha:", planilhaError);
+                    showToast("Aviso: Falha de conexão ao salvar na Planilha.", true);
+                }
+
+                // 2. GERAR IMAGEM PARA COMPARTILHAMENTO
+                btnFinalizar.innerHTML = '<i data-lucide="image" class="w-4 h-4"></i> <span class="hidden sm:inline">Gerando Imagem...</span>';
+                lucide.createIcons();
+
+                const element = document.getElementById('report-card');
                 const options = {
                     scale: 5,
                     useCORS: true, 
@@ -786,29 +889,77 @@
                         }
                     }
                 };
+
                 const canvas = await html2canvas(element, options);
-                const imgData = canvas.toDataURL('image/png');
-                const dateVal = document.getElementById('reportDate')?.value || '';
+                
                 let dateStr = 'Data_Indefinida';
+                let dateStrFormatada = 'Data_Indefinida';
                 let weekNumber = getWeekNumber(new Date());
-                if (dateVal) {
-                    dateStr = dateVal.split('-').reverse().join('-');
-                    const [y, m, d] = dateVal.split('-');
+                if (dataServico) {
+                    dateStr = dataServico.split('-').reverse().join('-');
+                    dateStrFormatada = dataServico.split('-').reverse().join('/');
+                    const [y, m, d] = dataServico.split('-');
                     weekNumber = getWeekNumber(new Date(y, m - 1, d));
                 }
-                const opSel = document.getElementById('operatorSelect')?.value || '';
-                const operator = opSel === 'Outro' ? (document.getElementById('operatorName')?.value || 'Tratorista') : opSel;
-                const filename = `Relatorio Operacional - ${operator} - ${dateStr} - Semana ${weekNumber}.png`;
-                const link = document.createElement('a');
-                link.href = imgData;
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            } catch (err) {
-                console.error("Erro ao gerar imagem:", err);
+                const filename = `Relatorio Operacional - ${operador} - ${dateStr} - Semana ${weekNumber}.png`;
+
+                // Calcular total de horas e combustível para a mensagem
+                let totalHM = 0;
+                let totalFuel = 0;
+                tasksData.forEach(item => {
+                    const startVal = parseHM(item.startHM);
+                    const endVal = parseHM(item.endHM);
+                    if (item.startHM && item.endHM && !isNaN(startVal) && !isNaN(endVal)) {
+                        totalHM += (endVal - startVal);
+                    }
+
+                    const fuelVal = parseHM(item.fuel);
+                    if (item.fuel && !isNaN(fuelVal)) {
+                        totalFuel += fuelVal;
+                    }
+                });
+                const hmText = totalHM > 0 ? `${formatDisplayHM(totalHM)} H` : '0 H';
+                const fuelText = totalFuel > 0 ? `${formatDisplayHM(totalFuel)} L` : 'Nenhum';
+                
+                const textoWhatsApp = `*Relatório Operacional - SPG Oásis*\n\n*Operador:* ${operador}\n*Data:* ${dateStrFormatada} - SE ${weekNumber}\n*Serviços Realizados:* ${tasksData.length}\n*Total de Horas:* ${hmText}\n*Total de Combustível:* ${fuelText}`;
+
+                // 3. COMPARTILHAR DIRETAMENTE PARA O WHATSAPP NATIVO DO CELULAR
+                canvas.toBlob(async (blob) => {
+                    const file = new File([blob], filename, { type: 'image/png' });
+                    
+                    // Verifica se o navegador do celular suporta compartilhamento de arquivos
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                title: 'Relatório SPG Oásis',
+                                text: textoWhatsApp,
+                                files: [file]
+                            });
+                        } catch (err) {
+                            console.log("Compartilhamento nativo cancelado pelo usuário.");
+                        }
+                    } else {
+                        // Se for no Computador/Navegador antigo, faz o download convencional
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = filename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                    }
+                }, 'image/png');
+
+            } catch (error) {
+                console.error("Erro geral:", error);
+                showToast("Ocorreu um erro ao processar. Tente novamente.", true);
             } finally {
-                if (btnSpan) btnSpan.innerText = originalText;
+                // Restaura o botão ao estado original
+                btnFinalizar.innerHTML = originalText;
+                btnFinalizar.disabled = false;
+                btnFinalizar.classList.remove('opacity-75', 'cursor-not-allowed');
+                lucide.createIcons();
             }
         }
     </script>
