@@ -44,6 +44,10 @@
             </div>
         </div>
         <div class="flex gap-2">
+            <button type="button" onclick="abrirDashboard()" id="btnDashboard" class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-lg shadow-blue-600/20 transition-all active:scale-95 active:bg-blue-800">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">Dashboard</span>
+            </button>
             <button type="button" onclick="abrirModalConfirmacao()" id="btnFinalizar" class="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold shadow-lg shadow-green-600/20 transition-all active:scale-95 active:bg-green-800">
                 <i data-lucide="send" class="w-4 h-4"></i>
                 <span class="hidden sm:inline">Finalizar Relatório</span>
@@ -51,6 +55,7 @@
         </div>
     </div>
 
+    <div id="mainPage">
     <div class="container mx-auto p-4 flex flex-col lg:flex-row gap-8 mt-4">
         
         <!-- COLUNA DA ESQUERDA: CONTROLES -->
@@ -277,6 +282,7 @@
             </div>
         </div>
     </div>
+    </div>
 
     <!-- Modal de Confirmação -->
     <div id="modalConfirmacao" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
@@ -297,14 +303,213 @@
         </div>
     </div>
 
+    <!-- Dashboard -->
+    <div id="dashboardPage" class="hidden w-full max-w-none px-4 sm:px-6 lg:px-8 mt-4 mb-8">
+        <div class="rounded-2xl overflow-hidden border border-slate-200 shadow-2xl bg-slate-50">
+            <div class="bg-gradient-to-r from-slate-900 to-slate-700 text-white p-4 sm:p-5 flex flex-col gap-4 sticky top-0 z-10">
+                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div>
+                        <p class="text-[10px] uppercase tracking-[0.3em] text-slate-300 font-bold">SPG Oásis</p>
+                        <h3 class="text-xl sm:text-2xl font-black">Dashboard operacional</h3>
+                        <p id="dashboardUpdatedAt" class="text-xs sm:text-sm text-slate-300 mt-1">Carregando dados...</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="carregarDashboard()" class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold transition-colors flex items-center gap-2">
+                            <i data-lucide="refresh-ccw" class="w-4 h-4"></i>
+                            <span>Atualizar</span>
+                        </button>
+                        <button type="button" onclick="fecharDashboard()" class="px-3 py-2 rounded-lg bg-white text-slate-900 hover:bg-slate-100 text-xs font-bold transition-colors flex items-center gap-2">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                            <span>Voltar ao formulário</span>
+                        </button>
+                    </div>
+                </div>
+                <p id="dashboardStatus" class="text-xs sm:text-sm text-slate-300">Resumo geral dos dados da planilha.</p>
+            </div>
+            <div id="dashboardContent" class="p-4 sm:p-5">
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm mb-4">
+                    <div class="flex flex-col gap-1">
+                        <h4 class="text-sm font-black text-slate-800">Parâmetros de custo</h4>
+                        <p class="text-xs text-slate-500">Informe o preço do diesel por litro e o salário mensal do operador para estimar o custo da hora do trator.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">PREÇO DO DIESEL (R$/L)</label>
+                            <input type="text" inputmode="decimal" id="dashDieselPrice" oninput="atualizarDashboardCustos()" placeholder="Ex: 6,20" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">SALÁRIO MENSAL DO OPERADOR (R$)</label>
+                            <input type="text" inputmode="decimal" id="dashOperatorSalary" oninput="atualizarDashboardCustos()" placeholder="Ex: 3200,00" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm mb-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                            <h4 class="text-sm font-black text-slate-800">Filtros</h4>
+                            <p class="text-xs text-slate-500">Use um ou mais filtros para recalcular os gráficos e os custos.</p>
+                        </div>
+                        <button type="button" onclick="limparFiltrosDashboard()" class="self-start sm:self-auto px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors flex items-center gap-2">
+                            <i data-lucide="eraser" class="w-4 h-4"></i>
+                            <span>Limpar filtros</span>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 mt-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">BLOCO</label>
+                            <select id="dashFilterLocation" onchange="atualizarDashboardFiltros()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700"></select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">SERVIÇO</label>
+                            <select id="dashFilterService" onchange="atualizarDashboardFiltros()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700"></select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">IMPLEMENTO</label>
+                            <select id="dashFilterImplement" onchange="atualizarDashboardFiltros()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700"></select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">SOLICITANTE</label>
+                            <select id="dashFilterRequester" onchange="atualizarDashboardFiltros()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700"></select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">OPERADOR</label>
+                            <select id="dashFilterOperator" onchange="atualizarDashboardFiltros()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700"></select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">TRATOR</label>
+                            <select id="dashFilterTractor" onchange="atualizarDashboardFiltros()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700"></select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">DATA INÍCIO</label>
+                            <input type="date" id="dashFilterStartDate" onchange="atualizarDashboardFiltros()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">DATA FIM</label>
+                            <input type="date" id="dashFilterEndDate" onchange="atualizarDashboardFiltros()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 mb-4">
+                    <div class="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+                        <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold">Registros</div>
+                        <div id="dashTotalRegistros" class="mt-2 text-2xl font-black text-slate-900">-</div>
+                        <div class="text-xs text-slate-500 mt-1">linhas na planilha</div>
+                    </div>
+                    <div class="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+                        <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold">Horas totais</div>
+                        <div id="dashTotalHM" class="mt-2 text-2xl font-black text-slate-900">-</div>
+                        <div class="text-xs text-slate-500 mt-1">somatório dos apontamentos</div>
+                    </div>
+                    <div class="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+                        <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold">Combustível</div>
+                        <div id="dashTotalCombustivel" class="mt-2 text-2xl font-black text-slate-900">-</div>
+                        <div class="text-xs text-slate-500 mt-1">litros registrados</div>
+                    </div>
+                    <div class="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+                        <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold">Custo da hora</div>
+                        <div id="dashCustoHora" class="mt-2 text-2xl font-black text-slate-900">-</div>
+                        <div class="text-xs text-slate-500 mt-1">estimativa por hora</div>
+                    </div>
+                    <div class="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+                        <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold">Custo estimado</div>
+                        <div id="dashCustoTotal" class="mt-2 text-2xl font-black text-slate-900">-</div>
+                        <div class="text-xs text-slate-500 mt-1">no período exibido</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                        <h4 class="text-sm font-black text-slate-800 mb-3">Blocos com mais horas trabalhadas</h4>
+                        <div id="dashLocations" class="space-y-3"></div>
+                        <div class="mt-4">
+                            <h5 class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold mb-2">Custo estimado por bloco</h5>
+                            <div id="dashLocationsCost" class="space-y-2"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                        <h4 class="text-sm font-black text-slate-800 mb-3">Serviços com mais horas trabalhadas</h4>
+                        <div id="dashServices" class="space-y-3"></div>
+                        <div class="mt-4">
+                            <h5 class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold mb-2">Custo estimado por serviço</h5>
+                            <div id="dashServicesCost" class="space-y-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm mb-4">
+                    <div class="flex items-center justify-between gap-3 mb-3">
+                        <h4 class="text-sm font-black text-slate-800">Total por bloco</h4>
+                        <span id="dashBlocksRowsInfo" class="text-xs text-slate-500"></span>
+                    </div>
+                    <button type="button" id="dashBlocksToggleBtn" onclick="toggleDashboardTable('dashBlocksTableWrap', 'dashBlocksToggleBtn')" class="mb-3 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors flex items-center gap-2">
+                        <i data-lucide="chevrons-down-up" class="w-4 h-4"></i>
+                        <span>Abrir tabela rolante</span>
+                    </button>
+                    <div id="dashBlocksTableWrap" class="hidden overflow-x-auto max-h-[420px] overflow-y-auto border border-slate-100 rounded-xl">
+                        <table class="w-full min-w-[1100px] text-left text-xs">
+                            <thead class="bg-slate-50 text-slate-500 uppercase tracking-[0.12em]">
+                                <tr>
+                                    <th class="p-3">Bloco</th>
+                                    <th class="p-3">Total de horas</th>
+                                    <th class="p-3">Total de combustível</th>
+                                    <th class="p-3">Custo total do operador</th>
+                                    <th class="p-3">Custo total dos serviços</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashBlocksRows" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                    <div class="flex items-center justify-between gap-3 mb-3">
+                        <h4 class="text-sm font-black text-slate-800">Últimos registros</h4>
+                        <span id="dashRowsInfo" class="text-xs text-slate-500"></span>
+                    </div>
+                    <button type="button" id="dashRecentToggleBtn" onclick="toggleDashboardTable('dashRecentTableWrap', 'dashRecentToggleBtn')" class="mb-3 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors flex items-center gap-2">
+                        <i data-lucide="chevrons-down-up" class="w-4 h-4"></i>
+                        <span>Abrir tabela rolante</span>
+                    </button>
+                    <div id="dashRecentTableWrap" class="hidden overflow-x-auto max-h-[420px] overflow-y-auto border border-slate-100 rounded-xl">
+                        <table class="w-full min-w-[1100px] text-left text-xs">
+                            <thead class="bg-slate-50 text-slate-500 uppercase tracking-[0.12em]">
+                                <tr>
+                                    <th class="p-3">Data</th>
+                                    <th class="p-3">Operador</th>
+                                    <th class="p-3">Trator / Máquina</th>
+                                    <th class="p-3">Local</th>
+                                    <th class="p-3">Serviço</th>
+                                    <th class="p-3">Implemento</th>
+                                    <th class="p-3">Solicitante</th>
+                                    <th class="p-3">HM</th>
+                                    <th class="p-3">Combustível</th>
+                                    <th class="p-3">Observações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashRecentRows" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="dashboardError" class="hidden mt-4 rounded-2xl border border-red-200 bg-red-50 text-red-700 p-4 text-sm"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- JAVASCRIPT -->
     <script>
         let tasksData = JSON.parse(localStorage.getItem('spg_tractorData')) || [];
         let editingIndex = -1;
+        let dashboardDataCache = null;
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTUpCYBkaz-8Hcrt0KcYmThsix2bC2MNYDtR6dr0U1s8gQ6_gigKsJS_UPDdSZDGs_/exec";
+        const DASHBOARD_DATA_URL = `${APPS_SCRIPT_URL}?view=data`;
 
         lucide.createIcons();
         setDefaultDate();
         loadInputs();
+        loadDashboardInputs();
         
         // --- ORDENAÇÃO AO INICIAR ---
         sortTasksData();
@@ -340,8 +545,18 @@
 
         function parseHM(val) {
             if (!val) return 0;
-            // Remove os pontos de milhar e troca vírgula por ponto para o JavaScript calcular
-            return parseFloat(String(val).replace(/\./g, '').replace(',', '.')) || 0;
+            const text = String(val).trim();
+            if (!text) return 0;
+
+            if (text.includes(',') && text.includes('.')) {
+                return parseFloat(text.replace(/\./g, '').replace(',', '.')) || 0;
+            }
+
+            if (text.includes(',')) {
+                return parseFloat(text.replace(',', '.')) || 0;
+            }
+
+            return parseFloat(text) || 0;
         }
 
         function formatDisplayHM(num) {
@@ -350,6 +565,13 @@
             let parts = (hasDecimals ? fixedNum.toFixed(1) : fixedNum.toString()).split('.');
             parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
             return parts.join(',');
+        }
+
+        function calculateTaskHours(startValue, endValue) {
+            const startVal = parseHM(startValue);
+            const endVal = parseHM(endValue);
+            if (!startValue || !endValue || isNaN(startVal) || isNaN(endVal)) return 0;
+            return Math.abs(endVal - startVal);
         }
 
         function setDefaultDate() {
@@ -395,6 +617,143 @@
                 reportDate: document.getElementById('reportDate')?.value || ''
             };
             localStorage.setItem('spg_tractorInputs', JSON.stringify(inputs));
+        }
+
+        function saveDashboardInputs() {
+            const inputs = {
+                dieselPrice: document.getElementById('dashDieselPrice')?.value || '',
+                operatorSalary: document.getElementById('dashOperatorSalary')?.value || ''
+            };
+            localStorage.setItem('spg_dashboardInputs', JSON.stringify(inputs));
+        }
+
+        function loadDashboardInputs() {
+            const saved = localStorage.getItem('spg_dashboardInputs');
+            if (!saved) return;
+
+            try {
+                const inputs = JSON.parse(saved);
+                ['dashDieselPrice', 'dashOperatorSalary'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el && inputs[id === 'dashDieselPrice' ? 'dieselPrice' : 'operatorSalary']) {
+                        el.value = inputs[id === 'dashDieselPrice' ? 'dieselPrice' : 'operatorSalary'];
+                    }
+                });
+            } catch (e) {
+                console.error('Erro ao carregar parâmetros do dashboard', e);
+            }
+        }
+
+        function saveDashboardFilters() {
+            const inputs = {
+                location: document.getElementById('dashFilterLocation')?.value || '',
+                service: document.getElementById('dashFilterService')?.value || '',
+                implement: document.getElementById('dashFilterImplement')?.value || '',
+                requester: document.getElementById('dashFilterRequester')?.value || '',
+                operator: document.getElementById('dashFilterOperator')?.value || '',
+                tractor: document.getElementById('dashFilterTractor')?.value || '',
+                startDate: document.getElementById('dashFilterStartDate')?.value || '',
+                endDate: document.getElementById('dashFilterEndDate')?.value || ''
+            };
+            localStorage.setItem('spg_dashboardFilters', JSON.stringify(inputs));
+        }
+
+        function loadDashboardFilters() {
+            const saved = localStorage.getItem('spg_dashboardFilters');
+            if (!saved) return;
+
+            try {
+                const filters = JSON.parse(saved);
+                ['dashFilterLocation', 'dashFilterService', 'dashFilterImplement', 'dashFilterRequester', 'dashFilterOperator', 'dashFilterTractor', 'dashFilterStartDate', 'dashFilterEndDate'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el && typeof filters === 'object') {
+                        const keyMap = {
+                            dashFilterLocation: 'location',
+                            dashFilterService: 'service',
+                            dashFilterImplement: 'implement',
+                            dashFilterRequester: 'requester',
+                            dashFilterOperator: 'operator',
+                            dashFilterTractor: 'tractor',
+                            dashFilterStartDate: 'startDate',
+                            dashFilterEndDate: 'endDate'
+                        };
+                        const key = keyMap[id];
+                        if (filters[key] !== undefined && filters[key] !== null) {
+                            el.value = filters[key];
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error('Erro ao carregar filtros do dashboard', e);
+            }
+        }
+
+        function populateDashboardFilters(records) {
+            const selectConfig = [
+                { id: 'dashFilterLocation', key: 'local', label: 'Todos os blocos' },
+                { id: 'dashFilterService', key: 'service', label: 'Todos os serviços' },
+                { id: 'dashFilterImplement', key: 'implemento', label: 'Todos os implementos' },
+                { id: 'dashFilterRequester', key: 'solicitante', label: 'Todos os solicitantes' },
+                { id: 'dashFilterOperator', key: 'operador', label: 'Todos os operadores' },
+                { id: 'dashFilterTractor', key: 'trator', label: 'Todos os tratores' }
+            ];
+
+            selectConfig.forEach(({ id, key, label }) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const current = el.value;
+                const values = Array.from(new Set((records || []).map(record => record[key]).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+                el.innerHTML = `<option value="">${escapeHtmlDashboard(label)}</option>` + values.map(value => `<option value="${escapeHtmlAttribute(value)}">${escapeHtmlDashboard(value)}</option>`).join('');
+                if (current) el.value = current;
+            });
+            loadDashboardFilters();
+        }
+
+        function getDashboardFilters() {
+            return {
+                location: document.getElementById('dashFilterLocation')?.value || '',
+                service: document.getElementById('dashFilterService')?.value || '',
+                implement: document.getElementById('dashFilterImplement')?.value || '',
+                requester: document.getElementById('dashFilterRequester')?.value || '',
+                operator: document.getElementById('dashFilterOperator')?.value || '',
+                tractor: document.getElementById('dashFilterTractor')?.value || '',
+                startDate: document.getElementById('dashFilterStartDate')?.value || '',
+                endDate: document.getElementById('dashFilterEndDate')?.value || ''
+            };
+        }
+
+        function atualizarDashboardFiltros() {
+            saveDashboardFilters();
+            if (dashboardDataCache) {
+                renderDashboard(dashboardDataCache);
+            }
+        }
+
+        function limparFiltrosDashboard() {
+            ['dashFilterLocation', 'dashFilterService', 'dashFilterImplement', 'dashFilterRequester', 'dashFilterOperator', 'dashFilterTractor', 'dashFilterStartDate', 'dashFilterEndDate'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            saveDashboardFilters();
+            if (dashboardDataCache) {
+                renderDashboard(dashboardDataCache);
+            }
+        }
+
+        function toggleDashboardTable(wrapId, buttonId) {
+            const wrap = document.getElementById(wrapId);
+            const button = document.getElementById(buttonId);
+            if (!wrap || !button) return;
+
+            const isHidden = wrap.classList.contains('hidden');
+            if (isHidden) {
+                wrap.classList.remove('hidden');
+                button.innerHTML = '<i data-lucide="chevrons-up-down" class="w-4 h-4"></i><span>Ocultar tabela</span>';
+            } else {
+                wrap.classList.add('hidden');
+                button.innerHTML = '<i data-lucide="chevrons-down-up" class="w-4 h-4"></i><span>Abrir tabela rolante</span>';
+            }
+            lucide.createIcons();
         }
         
         function loadInputs() {
@@ -676,12 +1035,8 @@
             } else {
                 container.innerHTML = '';
                 tasksData.forEach((item, index) => {
-                    let hmDiff = '-';
-                    const startVal = parseHM(item.startHM);
-                    const endVal = parseHM(item.endHM);
-                    if (item.startHM && item.endHM && !isNaN(startVal) && !isNaN(endVal)) {
-                        hmDiff = formatDisplayHM(endVal - startVal);
-                    }
+                    const hmHours = calculateTaskHours(item.startHM, item.endHM);
+                    const hmDiff = hmHours > 0 ? formatDisplayHM(hmHours) : '-';
                     container.innerHTML += `
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-4 last:mb-0">
                         <div class="bg-white px-4 py-3 border-b border-slate-100 flex items-center gap-2">
@@ -742,10 +1097,9 @@
             let totalHM = 0;
             let totalFuel = 0;
             tasksData.forEach(item => {
-                const startVal = parseHM(item.startHM);
-                const endVal = parseHM(item.endHM);
-                if (item.startHM && item.endHM && !isNaN(startVal) && !isNaN(endVal)) {
-                    totalHM += (endVal - startVal);
+                const hmHours = calculateTaskHours(item.startHM, item.endHM);
+                if (hmHours > 0) {
+                    totalHM += hmHours;
                 }
                 const fuelVal = parseHM(item.fuel);
                 if (item.fuel && !isNaN(fuelVal)) {
@@ -788,6 +1142,343 @@
                 toast.classList.add('opacity-0');
                 setTimeout(() => toast.remove(), 300);
             }, 3500);
+        }
+
+        function parseDashboardNumber(value) {
+            if (value === null || value === undefined || value === '') return 0;
+            if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+
+            const text = String(value).trim();
+            if (!text) return 0;
+
+            if (text.includes(',') && text.includes('.')) {
+                return parseFloat(text.replace(/\./g, '').replace(',', '.')) || 0;
+            }
+
+            if (text.includes(',')) {
+                return parseFloat(text.replace(',', '.')) || 0;
+            }
+
+            return parseFloat(text) || 0;
+        }
+
+        function formatCurrencyBR(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                maximumFractionDigits: 2
+            }).format(Number(value) || 0);
+        }
+
+        function atualizarDashboardCustos() {
+            saveDashboardInputs();
+            if (dashboardDataCache) {
+                renderDashboard(dashboardDataCache);
+            }
+        }
+
+        function abrirDashboard() {
+            const mainPage = document.getElementById('mainPage');
+            const dashboardPage = document.getElementById('dashboardPage');
+            if (mainPage) mainPage.classList.add('hidden');
+            if (dashboardPage) dashboardPage.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            carregarDashboard();
+        }
+
+        function fecharDashboard() {
+            const mainPage = document.getElementById('mainPage');
+            const dashboardPage = document.getElementById('dashboardPage');
+            if (dashboardPage) dashboardPage.classList.add('hidden');
+            if (mainPage) mainPage.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function carregarDashboard() {
+            const status = document.getElementById('dashboardStatus');
+            const updatedAt = document.getElementById('dashboardUpdatedAt');
+            const errorBox = document.getElementById('dashboardError');
+
+            if (status) status.textContent = 'Carregando dados da planilha...';
+            if (updatedAt) updatedAt.textContent = 'Atualizando dashboard...';
+            if (errorBox) {
+                errorBox.classList.add('hidden');
+                errorBox.textContent = '';
+            }
+
+            const callbackName = `dashboardCallback_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+            const script = document.createElement('script');
+            const cleanup = () => {
+                if (window[callbackName]) {
+                    try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+                }
+                if (script.parentNode) script.parentNode.removeChild(script);
+            };
+
+            window[callbackName] = (data) => {
+                cleanup();
+                renderDashboard(data);
+            };
+
+            script.src = `${DASHBOARD_DATA_URL}&callback=${callbackName}&_=${Date.now()}`;
+            script.async = true;
+            script.onerror = () => {
+                cleanup();
+                console.error('Erro ao carregar dashboard via JSONP.');
+                if (status) status.textContent = 'Não foi possível carregar o dashboard.';
+                if (updatedAt) updatedAt.textContent = 'Falha na leitura dos dados.';
+                if (errorBox) {
+                    errorBox.textContent = 'Não consegui ler os dados do Apps Script neste navegador. Verifique se o Web App está publicado e acessível.';
+                    errorBox.classList.remove('hidden');
+                }
+                showToast('Falha ao carregar o Dashboard.', true);
+            };
+
+            document.body.appendChild(script);
+        }
+
+        function renderDashboard(data) {
+            dashboardDataCache = data;
+            const allRecords = Array.isArray(data.allRecords) && data.allRecords.length
+                ? data.allRecords
+                : (Array.isArray(data.recentRows) ? data.recentRows : []);
+            populateDashboardFilters(allRecords);
+            const filters = getDashboardFilters();
+            const filteredRecords = applyDashboardFilters(allRecords, filters);
+            const totals = summarizeDashboardRecords(filteredRecords);
+
+            const totalRegistros = document.getElementById('dashTotalRegistros');
+            const totalHM = document.getElementById('dashTotalHM');
+            const totalCombustivel = document.getElementById('dashTotalCombustivel');
+            const custoHora = document.getElementById('dashCustoHora');
+            const custoTotal = document.getElementById('dashCustoTotal');
+            const updatedAt = document.getElementById('dashboardUpdatedAt');
+            const status = document.getElementById('dashboardStatus');
+            const rowsInfo = document.getElementById('dashRowsInfo');
+            const blocksRowsInfo = document.getElementById('dashBlocksRowsInfo');
+
+            const totalHours = totals.totalHMValue;
+            const totalFuel = totals.totalCombustivelValue;
+            const dieselPrice = parseDashboardNumber(document.getElementById('dashDieselPrice')?.value);
+            const operatorSalary = parseDashboardNumber(document.getElementById('dashOperatorSalary')?.value);
+            const fuelCost = totalFuel * dieselPrice;
+            const estimatedTotalCost = operatorSalary + fuelCost;
+            const hourlyCost = totalHours > 0 ? (estimatedTotalCost / totalHours) : 0;
+            const operatorHourlyCost = totalHours > 0 ? (operatorSalary / totalHours) : 0;
+            const servicesHourlyCost = totalHours > 0 ? (fuelCost / totalHours) : 0;
+
+            if (totalRegistros) totalRegistros.textContent = totals.totalRegistros;
+            if (totalHM) totalHM.textContent = `${formatDisplayHM(totalHours)} H`;
+            if (totalCombustivel) totalCombustivel.textContent = `${formatDisplayHM(totalFuel)} L`;
+            if (custoHora) custoHora.textContent = hourlyCost > 0 ? formatCurrencyBR(hourlyCost) : '-';
+            if (custoTotal) custoTotal.textContent = estimatedTotalCost > 0 ? formatCurrencyBR(estimatedTotalCost) : '-';
+            if (updatedAt) updatedAt.textContent = `Atualizado em ${data.generatedAt || 'data não informada'}`;
+            if (status) status.textContent = filteredRecords.length === allRecords.length ? 'Resumo geral carregado diretamente na página.' : 'Resumo filtrado conforme os critérios selecionados.';
+
+            renderDashboardBars('dashLocations', totals.byLocationHours || [], 'Nenhum bloco encontrado.', 'h');
+            renderDashboardBars('dashServices', totals.byServiceHours || [], 'Nenhum serviço encontrado.', 'h');
+            renderDashboardCostList('dashLocationsCost', totals.byLocationHours || [], hourlyCost, 'bloco');
+            renderDashboardCostList('dashServicesCost', totals.byServiceHours || [], hourlyCost, 'serviço');
+            renderDashboardBlocksTable(filteredRecords, operatorHourlyCost, servicesHourlyCost);
+
+            const rows = totals.recentRows || [];
+            if (rowsInfo) rowsInfo.textContent = `${rows.length} registro(s) exibido(s) de ${allRecords.length} total`;
+            if (blocksRowsInfo) blocksRowsInfo.textContent = `${Object.keys(groupRecordsByLocation(filteredRecords)).length} bloco(s) no total`;
+
+            const tbody = document.getElementById('dashRecentRows');
+            if (tbody) {
+                if (!rows.length) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="10" class="p-4 text-center text-slate-500">Nenhum registro recente para exibir.</td>
+                        </tr>
+                    `;
+                } else {
+                    tbody.innerHTML = rows.map(row => {
+                        const hmText = row.hmTotal && row.hmTotal !== '-' ? `${row.hmInicial || '-'} → ${row.hmFinal || '-'} (${row.hmTotal})` : '-';
+                        return `
+                            <tr class="align-top">
+                                <td class="p-3 whitespace-nowrap">${escapeHtmlDashboard(row.dataServico || '-')}</td>
+                                <td class="p-3">${escapeHtmlDashboard(row.operador || '-')}</td>
+                                <td class="p-3">${escapeHtmlDashboard(row.trator || '-')}</td>
+                                <td class="p-3">${escapeHtmlDashboard(row.local || '-')}</td>
+                                <td class="p-3">${escapeHtmlDashboard(row.service || '-')}</td>
+                                <td class="p-3">${escapeHtmlDashboard(row.implemento || '-')}</td>
+                                <td class="p-3">${escapeHtmlDashboard(row.solicitante || '-')}</td>
+                                <td class="p-3 whitespace-nowrap">${escapeHtmlDashboard(hmText)}</td>
+                                <td class="p-3 whitespace-nowrap">${escapeHtmlDashboard(row.combustivel || '-')}</td>
+                                <td class="p-3">${escapeHtmlDashboard(row.observacoes || '-')}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            }
+
+            lucide.createIcons();
+        }
+
+        function applyDashboardFilters(records, filters = getDashboardFilters()) {
+            return (records || []).filter(record => {
+                if (filters.location && record.local !== filters.location) return false;
+                if (filters.service && record.service !== filters.service) return false;
+                if (filters.implement && record.implemento !== filters.implement) return false;
+                if (filters.requester && record.solicitante !== filters.requester) return false;
+                if (filters.operator && record.operador !== filters.operator) return false;
+                if (filters.tractor && record.trator !== filters.tractor) return false;
+                if (filters.startDate && (!record.dateIso || record.dateIso < filters.startDate)) return false;
+                if (filters.endDate && (!record.dateIso || record.dateIso > filters.endDate)) return false;
+                return true;
+            });
+        }
+
+        function summarizeDashboardRecords(records) {
+            const summary = {
+                totalRegistros: 0,
+                totalHMValue: 0,
+                totalCombustivelValue: 0,
+                byServiceHours: [],
+                byLocationHours: [],
+                recentRows: []
+            };
+            const serviceHours = {};
+            const locationHours = {};
+
+            (records || []).forEach(record => {
+                summary.totalRegistros += 1;
+                const hmHours = parseDashboardNumber(record.hmHours);
+                summary.totalHMValue += hmHours;
+                summary.totalCombustivelValue += parseDashboardNumber(record.combustivelValue);
+                const serviceKey = record.service || 'Não informado';
+                const locationKey = record.local || 'Não informado';
+                serviceHours[serviceKey] = (serviceHours[serviceKey] || 0) + hmHours;
+                locationHours[locationKey] = (locationHours[locationKey] || 0) + hmHours;
+            });
+
+            summary.byServiceHours = toSortedHoursList(serviceHours, 5);
+            summary.byLocationHours = toSortedHoursList(locationHours, 5);
+            summary.recentRows = (records || []).slice().reverse().slice(0, 10);
+            return summary;
+        }
+
+        function groupRecordsByLocation(records) {
+            const grouped = {};
+
+            (records || []).forEach(record => {
+                const key = record.local || 'Não informado';
+                if (!grouped[key]) {
+                    grouped[key] = {
+                        label: key,
+                        hours: 0,
+                        fuel: 0
+                    };
+                }
+                grouped[key].hours += parseDashboardNumber(record.hmHours);
+                grouped[key].fuel += parseDashboardNumber(record.combustivelValue);
+            });
+
+            return grouped;
+        }
+
+        function renderDashboardBlocksTable(records, operatorHourlyCost, servicesHourlyCost) {
+            const tbody = document.getElementById('dashBlocksRows');
+            if (!tbody) return;
+
+            const grouped = groupRecordsByLocation(records);
+            const rows = Object.values(grouped).sort((a, b) => b.hours - a.hours);
+
+            if (!rows.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="p-4 text-center text-slate-500">Nenhum bloco encontrado.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = rows.map(row => {
+                const costOperator = row.hours * operatorHourlyCost;
+                const costServices = row.hours * servicesHourlyCost;
+                return `
+                    <tr class="align-top">
+                        <td class="p-3 font-bold text-slate-700">${escapeHtmlDashboard(row.label)}</td>
+                        <td class="p-3 whitespace-nowrap">${formatDisplayHM(row.hours)} H</td>
+                        <td class="p-3 whitespace-nowrap">${formatDisplayHM(row.fuel)} L</td>
+                        <td class="p-3 whitespace-nowrap">${costOperator > 0 ? formatCurrencyBR(costOperator) : '-'}</td>
+                        <td class="p-3 whitespace-nowrap">${costServices > 0 ? formatCurrencyBR(costServices) : '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderDashboardBars(containerId, items, emptyMessage, unitLabel = '') {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            if (!Array.isArray(items) || items.length === 0) {
+                container.innerHTML = `<div class="text-sm text-slate-500 bg-slate-50 border border-dashed border-slate-200 rounded-xl p-4">${escapeHtmlDashboard(emptyMessage)}</div>`;
+                return;
+            }
+
+            const max = Math.max(...items.map(item => item.hours || item.count || 0), 1);
+            container.innerHTML = items.map(item => {
+                const value = item.hours || item.count || 0;
+                const width = Math.max(6, Math.round((value / max) * 100));
+                return `
+                    <div>
+                        <div class="flex items-center justify-between gap-3 mb-1">
+                            <span class="text-sm font-bold text-slate-700">${escapeHtmlDashboard(item.label || 'Sem nome')}</span>
+                            <span class="text-xs font-bold text-slate-500">${value > 0 ? `${formatDisplayHM(value)} ${unitLabel ? unitLabel.toUpperCase() : ''}`.trim() : '0'}</span>
+                        </div>
+                        <div class="h-3 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full bg-gradient-to-r from-blue-600 to-sky-400" style="width:${width}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toSortedHoursList(map, limit) {
+            return Object.keys(map)
+                .map(label => ({ label: label, hours: map[label] }))
+                .sort((a, b) => b.hours - a.hours)
+                .slice(0, limit);
+        }
+
+        function renderDashboardCostList(containerId, items, hourlyCost, itemLabel) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            if (!Array.isArray(items) || items.length === 0) {
+                container.innerHTML = `<div class="text-sm text-slate-500 bg-slate-50 border border-dashed border-slate-200 rounded-xl p-4">Nenhum ${escapeHtmlDashboard(itemLabel)} encontrado.</div>`;
+                return;
+            }
+
+            container.innerHTML = items.map(item => {
+                const hours = item.hours || item.count || 0;
+                const estimatedCost = hours > 0 ? (hours * hourlyCost) : 0;
+                return `
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="text-sm font-bold text-slate-700">${escapeHtmlDashboard(item.label || 'Sem nome')}</span>
+                            <span class="text-xs font-bold text-slate-500">${hours > 0 ? `${formatDisplayHM(hours)} H` : '-'}</span>
+                        </div>
+                        <div class="mt-1 text-xs text-slate-500">Custo estimado: <span class="font-bold text-slate-700">${estimatedCost > 0 ? formatCurrencyBR(estimatedCost) : '-'}</span></div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function escapeHtmlDashboard(value) {
+            return String(value === null || value === undefined ? '' : value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function escapeHtmlAttribute(value) {
+            return escapeHtmlDashboard(value).replace(/`/g, '&#96;');
         }
 
         // --- FLUXO DE FINALIZAÇÃO (PLANILHA + WHATSAPP) ---
@@ -844,8 +1535,6 @@
                     trator: trator,
                     tarefas: tasksData
                 };
-
-                const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTUpCYBkaz-8Hcrt0KcYmThsix2bC2MNYDtR6dr0U1s8gQ6_gigKsJS_UPDdSZDGs_/exec";
                 
                 try {
                     // O modo 'no-cors' previne o erro "Failed to Fetch" em ambientes restritos, despachando os dados sem esperar ler o JSON de resposta
@@ -907,10 +1596,9 @@
                 let totalHM = 0;
                 let totalFuel = 0;
                 tasksData.forEach(item => {
-                    const startVal = parseHM(item.startHM);
-                    const endVal = parseHM(item.endHM);
-                    if (item.startHM && item.endHM && !isNaN(startVal) && !isNaN(endVal)) {
-                        totalHM += (endVal - startVal);
+                    const hmHours = calculateTaskHours(item.startHM, item.endHM);
+                    if (hmHours > 0) {
+                        totalHM += hmHours;
                     }
 
                     const fuelVal = parseHM(item.fuel);
