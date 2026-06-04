@@ -6,9 +6,9 @@
     <title>Diário do Tratorista SPG Oásis</title>
     
     <!-- Configurações PWA -->
-    <link rel="icon" type="image/png" href="https://i.imgur.com/wEozr34.png">
-    <link rel="apple-touch-icon" href="https://i.imgur.com/wEozr34.png">
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Máquinas SPG Oásis","short_name":"Tratores SPG","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#ffffff","icons":[{"src":"https://i.imgur.com/wEozr34.png","sizes":"192x192","type":"image/png"},{"src":"https://i.imgur.com/wEozr34.png","sizes":"512x512","type":"image/png"}]}'>
+    <link id="siteFavicon" rel="icon" type="image/svg+xml" href="">
+    <link id="siteAppleTouchIcon" rel="apple-touch-icon" href="">
+    <link id="siteManifest" rel="manifest" href="">
     
     <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -18,18 +18,68 @@
     <!-- Bibliotecas Externas -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://unpkg.com/html-to-image@1.11.13/dist/html-to-image.js"></script>
     
     <style>
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         input, select, textarea { line-height: 1.5; }
-        /* Ajuste global de line-height para evitar cortes na renderização do canvas */
+        /* Ajuste global de line-height para evitar cortes na exportação da imagem */
         .report-text { line-height: 1.6 !important; }
+        .report-export-desktop .report-header-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        }
+        .report-export-desktop .report-kpi-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        }
+        .report-export-desktop .report-activity-grid {
+            grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+        }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen pb-20 select-none">
+
+    <svg aria-hidden="true" focusable="false" class="hidden" xmlns="http://www.w3.org/2000/svg">
+        <symbol id="brandLogo" viewBox="0 0 512 512">
+            <defs>
+                <linearGradient id="brandBg" x1="64" y1="48" x2="448" y2="464" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#0f766e"/>
+                    <stop offset="52%" stop-color="#0f4c81"/>
+                    <stop offset="100%" stop-color="#0f172a"/>
+                </linearGradient>
+                <linearGradient id="brandAccent" x1="160" y1="184" x2="352" y2="344" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#f8fafc"/>
+                    <stop offset="100%" stop-color="#dbeafe"/>
+                </linearGradient>
+                <linearGradient id="brandMetal" x1="160" y1="220" x2="352" y2="360" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#f8f6ef"/>
+                    <stop offset="100%" stop-color="#e2e8f0"/>
+                </linearGradient>
+            </defs>
+            <circle cx="256" cy="256" r="248" fill="url(#brandBg)"/>
+            <circle cx="256" cy="256" r="216" fill="none" stroke="#ffffff" stroke-opacity="0.16" stroke-width="3"/>
+            <circle cx="256" cy="256" r="178" fill="#f8f6ef" fill-opacity="0.98"/>
+            <circle cx="256" cy="256" r="146" fill="#ffffff" fill-opacity="0.7"/>
+            <path d="M164 300c0-11 9-20 20-20h57l30-35c5-6 12-9 20-9h56c10 0 19 5 24 14l17 29h16c11 0 20 9 20 20v19c0 10-8 18-18 18H183c-10 0-19-8-19-18v-18z" fill="url(#brandAccent)"/>
+            <path d="M238 222h68c7 0 13 3 17 9l15 25h-70l-12-20c-3-4-7-7-12-7h-6z" fill="url(#brandMetal)"/>
+            <rect x="272" y="222" width="38" height="68" rx="10" fill="#e2e8f0"/>
+            <rect x="280" y="232" width="22" height="24" rx="4" fill="#ffffff" fill-opacity="0.55"/>
+            <circle cx="196" cy="318" r="58" fill="#0f172a"/>
+            <circle cx="196" cy="318" r="30" fill="#f8f6ef"/>
+            <circle cx="362" cy="330" r="40" fill="#0f172a"/>
+            <circle cx="362" cy="330" r="20" fill="#f8f6ef"/>
+            <path d="M148 300h18c8 0 15-6 16-14l3-16h24l-3 18c-3 20-20 35-40 35h-18z" fill="#0f172a" fill-opacity="0.95"/>
+            <path d="M144 304c0-9 7-16 16-16h12c5 0 10 2 13 6l8 10H144z" fill="#f8f6ef"/>
+            <path d="M260 188v-28" stroke="#0f4c81" stroke-width="14" stroke-linecap="round"/>
+            <circle cx="260" cy="148" r="12" fill="#0f4c81"/>
+            <path d="M126 360h260" stroke="#0f766e" stroke-width="8" stroke-linecap="round" stroke-opacity="0.35"/>
+            <text x="256" y="405" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="800" letter-spacing="2" fill="#0f172a">DT</text>
+            <text x="256" y="438" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="3" fill="#0f766e">DIÁRIO DE UM</text>
+            <text x="256" y="462" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="3" fill="#0f766e">TRATORISTA</text>
+        </symbol>
+    </svg>
 
     <!-- Container para Toasts (Mensagens flutuantes) -->
     <div id="toastContainer" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 w-max max-w-[90vw]"></div>
@@ -37,7 +87,9 @@
     <!-- Navbar -->
     <div class="bg-white border-b border-slate-200 px-4 py-3 flex justify-between items-center shadow-sm sticky top-0 z-40">
         <div class="flex items-center gap-3">
-            <img src="https://i.imgur.com/wEozr34.png" alt="Logo SPG" class="w-8 h-8 rounded-lg shadow-sm border border-slate-100">
+            <svg id="navbarLogo" viewBox="0 0 512 512" aria-hidden="true" class="w-8 h-8 rounded-lg shadow-sm border border-slate-100 overflow-hidden">
+                <use href="#brandLogo"></use>
+            </svg>
             <div>
                 <h1 class="text-sm font-bold text-slate-800 pb-0.5">SPG Oásis</h1>
                 <p class="text-[10px] text-slate-500 font-medium">Diário de Máquinas / Tratores</p>
@@ -62,31 +114,34 @@
         <div class="w-full lg:w-1/3 space-y-4">
             
             <!-- 1. PARÂMETROS DO TURNO -->
-            <div class="bg-white p-6 rounded shadow-sm border border-slate-200">
-                <h2 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2">
-                    <i data-lucide="settings" class="w-4 h-4 text-slate-500"></i> PARÂMETROS DO TURNO
+            <div class="bg-white/90 backdrop-blur-sm p-6 rounded-3xl shadow-[0_10px_30px_rgba(15,23,42,0.08)] border border-slate-200/80">
+                <h2 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2 border-b border-slate-100 pb-3">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 ring-1 ring-slate-200/80">
+                        <i data-lucide="settings" class="w-4 h-4"></i>
+                    </span>
+                    <span class="tracking-wide">PARÂMETROS DO TURNO</span>
                 </h2>
                 
                 <div class="grid grid-cols-2 gap-3 mb-3">
                     <div>
                         <label class="text-[10px] font-bold text-slate-500 mb-1 block uppercase">OPERADOR (TRATORISTA)</label>
-                        <select id="operatorSelect" onchange="checkOther('operatorSelect', 'operatorName'); renderReport()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                        <select id="operatorSelect" onchange="checkOther('operatorSelect', 'operatorName'); renderReport()" class="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
                             <option value="Henrique Soares">Henrique Soares</option>
                             <option value="Outro">Outro...</option>
                         </select>
                         <div id="operatorNameContainer" class="hidden relative">
-                            <input type="text" id="operatorName" oninput="renderReport()" placeholder="Digite o nome..." class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700 pr-8">
+                            <input type="text" id="operatorName" oninput="renderReport()" placeholder="Digite o nome..." class="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 pr-10 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
                             <button type="button" onclick="revertToSelect('operatorSelect', 'operatorName', 'Henrique Soares'); renderReport()" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
                         </div>
                     </div>
                     <div>
                         <label class="text-[10px] font-bold text-slate-500 mb-1 block uppercase">TRATOR / MÁQUINA</label>
-                        <select id="tractorSelect" onchange="checkOther('tractorSelect', 'tractorName'); renderReport()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                        <select id="tractorSelect" onchange="checkOther('tractorSelect', 'tractorName'); renderReport()" class="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
                             <option value="Massey Ferguson 4409">Massey Ferguson 4409</option>
                             <option value="Outro">Outro...</option>
                         </select>
                         <div id="tractorNameContainer" class="hidden relative">
-                            <input type="text" id="tractorName" oninput="renderReport()" placeholder="Modelo do trator" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700 pr-8">
+                            <input type="text" id="tractorName" oninput="renderReport()" placeholder="Modelo do trator" class="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 pr-10 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
                             <button type="button" onclick="revertToSelect('tractorSelect', 'tractorName', 'Massey Ferguson 4409'); renderReport()" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
                         </div>
                     </div>
@@ -94,28 +149,32 @@
 
                 <div class="mb-3">
                     <label class="text-[10px] font-bold text-slate-500 mb-1 block uppercase">DATA DO SERVIÇO</label>
-                    <input type="date" id="reportDate" oninput="renderReport()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                    <input type="date" id="reportDate" oninput="renderReport()" class="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
                 </div>
+
             </div>
 
             <!-- 2. REGISTRO DE ATIVIDADE -->
-            <div id="formContainer" class="bg-white p-6 rounded shadow-sm border border-slate-200 transition-colors duration-300">
-                <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+            <div id="formContainer" class="bg-white/90 backdrop-blur-sm p-6 rounded-3xl shadow-[0_10px_30px_rgba(15,23,42,0.08)] border border-slate-200/80 transition-colors duration-300">
+                <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
                     <h2 id="formTitle" class="text-sm font-bold text-slate-700 flex items-center gap-2 uppercase">
-                        <i data-lucide="tractor" class="w-4 h-4 text-slate-500"></i> REGISTRAR ATIVIDADE
+                        <span class="flex h-8 w-8 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 ring-1 ring-slate-200/80">
+                            <i data-lucide="tractor" class="w-4 h-4"></i>
+                        </span>
+                        <span class="tracking-wide">REGISTRAR ATIVIDADE</span>
                     </h2>
-                    <button type="button" onclick="clearTaskForm()" class="text-[10px] font-bold text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1 uppercase">
+                    <button type="button" onclick="abrirModalLimpeza('form')" class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400 shadow-sm transition-all hover:border-red-200 hover:bg-red-50 hover:text-red-500">
                         <i data-lucide="x-circle" class="w-3 h-3"></i> LIMPAR
                     </button>
                 </div>
                 
                 <form id="taskForm" onsubmit="addTask(event)" class="space-y-4">
                     
-                    <div class="grid grid-cols-2 gap-3">
-                        <!-- IDENTIFICAÇÃO (BLOCO) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <!-- IDENTIFICAÇÃO (LOCAL) -->
                         <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">LOCAL / BLOCO</label>
-                            <select id="taskLocationSelect" onchange="checkOther('taskLocationSelect', 'taskLocation')" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700 mb-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">LOCAL</label>
+                            <select id="taskLocationSelect" onchange="checkOther('taskLocationSelect', 'taskLocation')" class="mb-2 w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
                                 <option value="">Selecione...</option>
                                 <option value="Bloco 1">Bloco 1</option>
                                 <option value="Bloco 2">Bloco 2</option>
@@ -135,15 +194,20 @@
                                 <option value="Outro">Outro...</option>
                             </select>
                             <div id="taskLocationContainer" class="hidden relative">
-                                <input type="text" id="taskLocation" placeholder="Especifique o local" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700 pr-8">
+                                <input type="text" id="taskLocation" placeholder="Especifique o local" class="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 pr-10 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
                                 <button type="button" onclick="revertToSelect('taskLocationSelect', 'taskLocation', '')" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
                             </div>
+                        </div>
+
+                        <div class="hidden">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">CICLO</label>
+                            <input type="text" id="taskCycle" placeholder="Ex: 1, 2, 3..." class="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
                         </div>
 
                         <!-- SERVIÇO REALIZADO -->
                         <div>
                             <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">SERVIÇO REALIZADO</label>
-                            <select id="taskServiceSelect" onchange="checkOther('taskServiceSelect', 'taskService')" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700 mb-2">
+                            <select id="taskServiceSelect" onchange="checkOther('taskServiceSelect', 'taskService')" class="mb-2 w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
                                 <option value="">Selecione...</option>
                                 <option value="Roçagem (Trituração)">Roçagem (Trituração)</option>
                                 <option value="Incorporação (Gradagem Pesada)">Incorporação (Gradagem Pesada)</option>
@@ -156,7 +220,7 @@
                                 <option value="Outro">Outro...</option>
                             </select>
                             <div id="taskServiceContainer" class="hidden relative">
-                                <input type="text" id="taskService" placeholder="Especifique o serviço" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700 pr-8">
+                                <input type="text" id="taskService" placeholder="Especifique o serviço" class="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 pr-10 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
                                 <button type="button" onclick="revertToSelect('taskServiceSelect', 'taskService', '')" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
                             </div>
                         </div>
@@ -166,7 +230,7 @@
                         <!-- IMPLEMENTO UTILIZADO -->
                         <div>
                             <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">IMPLEMENTO UTILIZADO</label>
-                            <select id="taskImplementSelect" onchange="checkOther('taskImplementSelect', 'taskImplement')" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                            <select id="taskImplementSelect" onchange="checkOther('taskImplementSelect', 'taskImplement')" class="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
                                 <option value="">Selecione...</option>
                                 <option value="Grade Aradora">Grade Aradora</option>
                                 <option value="Encanteirador">Encanteirador</option>
@@ -176,7 +240,7 @@
                                 <option value="Outro">Outro...</option>
                             </select>
                             <div id="taskImplementContainer" class="hidden relative">
-                                <input type="text" id="taskImplement" placeholder="Especifique o implemento" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700 pr-8">
+                                <input type="text" id="taskImplement" placeholder="Especifique o implemento" class="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 pr-10 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
                                 <button type="button" onclick="revertToSelect('taskImplementSelect', 'taskImplement', '')" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
                             </div>
                         </div>
@@ -184,58 +248,62 @@
                         <!-- QUEM SOLICITOU -->
                         <div>
                             <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">QUEM SOLICITOU?</label>
-                            <select id="taskRequesterSelect" onchange="checkOther('taskRequesterSelect', 'taskRequester')" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                            <select id="taskRequesterSelect" onchange="checkOther('taskRequesterSelect', 'taskRequester')" class="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
                                 <option value="">Selecione...</option>
-                                <option value="José Márcio">José Márcio</option>
                                 <option value="Claudio Soares">Claudio Soares</option>
                                 <option value="Assis Paulo">Assis Paulo</option>
                                 <option value="Outro">Outro...</option>
                             </select>
                             <div id="taskRequesterContainer" class="hidden relative">
-                                <input type="text" id="taskRequester" placeholder="Nome do solicitante" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700 pr-8">
+                                <input type="text" id="taskRequester" placeholder="Nome do solicitante" class="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 pr-10 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
                                 <button type="button" onclick="revertToSelect('taskRequesterSelect', 'taskRequester', '')" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
                             </div>
                         </div>
                     </div>
 
                     <!-- HORÍMETRO E ABASTECIMENTO DA TAREFA -->
-                    <div class="border border-slate-200 rounded p-3 bg-slate-50/30 mt-2">
-                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-3 tracking-wider border-b border-slate-100 pb-1">APONTAMENTO DE HORÍMETRO E COMBUSTÍVEL</div>
+                    <div class="border border-slate-200/80 rounded-3xl p-4 bg-gradient-to-br from-slate-50/80 to-white mt-2 shadow-sm">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-3 tracking-wider border-b border-slate-100 pb-2">APONTAMENTO DE HORÍMETRO E COMBUSTÍVEL</div>
                         
                         <div class="grid grid-cols-2 gap-3 mb-3">
                             <div>
                                 <label class="text-[10px] font-bold text-slate-500 mb-1 block uppercase">HORÍMETRO INICIAL</label>
-                                <input type="text" inputmode="numeric" id="taskStartHM" oninput="formatHMInput(this)" maxlength="7" required placeholder="" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                                <input type="text" inputmode="numeric" id="taskStartHM" oninput="formatHMInput(this)" maxlength="7" required placeholder="" class="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
                             </div>
                             <div>
                                 <label class="text-[10px] font-bold text-slate-500 mb-1 block uppercase">HORÍMETRO FINAL</label>
-                                <input type="text" inputmode="numeric" id="taskEndHM" oninput="formatHMInput(this)" maxlength="7" required placeholder="" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                                <input type="text" inputmode="numeric" id="taskEndHM" oninput="formatHMInput(this)" maxlength="7" required placeholder="" class="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
                             </div>
                         </div>
 
                         <div>
                             <label class="text-[10px] font-bold text-slate-500 mb-1 block uppercase">COMBUSTÍVEL (LITROS) - OPCIONAL</label>
-                            <input type="text" inputmode="numeric" id="taskFuel" oninput="formatHMInput(this)" maxlength="7" placeholder="Ex: 50,0" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                            <input type="text" inputmode="numeric" id="taskFuel" oninput="formatHMInput(this)" maxlength="7" placeholder="Ex: 50,0" class="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
+                        </div>
+
+                        <div class="mt-3 hidden">
+                            <label class="text-[10px] font-bold text-slate-500 mb-1 block uppercase">ÓLEO DIESEL (R$/L)</label>
+                            <input type="text" inputmode="decimal" id="taskDieselPrice" placeholder="Ex: 6,20" class="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
                         </div>
                     </div>
 
                     <!-- OBSERVAÇÕES -->
                     <div>
                         <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">OBSERVAÇÕES / STATUS</label>
-                        <textarea id="taskNotes" rows="2" placeholder="Algum problema com a máquina ou local?" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700 resize-none"></textarea>
+                        <textarea id="taskNotes" rows="2" placeholder="Algum problema com a máquina ou local?" class="w-full rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100 resize-none"></textarea>
                     </div>
 
-                    <button type="submit" id="submitBtn" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded transition-all flex justify-center items-center gap-2 uppercase text-xs shadow-lg shadow-slate-900/20">
+                    <button type="submit" id="submitBtn" class="w-full rounded-2xl bg-slate-900 py-3 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-slate-900/20 transition-all hover:bg-slate-800 active:scale-[0.99] flex justify-center items-center gap-2">
                         <i data-lucide="plus-square" class="w-4 h-4"></i> <span>INSERIR NO RELATÓRIO</span>
                     </button>
                 </form>
             </div>
 
             <!-- Lista de Itens -->
-            <div class="bg-white p-6 rounded shadow-sm border border-slate-200">
-                <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+            <div class="bg-white/90 backdrop-blur-sm p-6 rounded-3xl shadow-[0_10px_30px_rgba(15,23,42,0.08)] border border-slate-200/80">
+                <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
                     <h3 class="text-sm font-bold text-slate-700 uppercase">ATIVIDADES INSERIDAS</h3>
-                    <button onclick="clearAll()" class="text-[10px] font-bold text-red-500 hover:text-red-700 uppercase underline">LIMPAR LISTA</button>
+                    <button type="button" onclick="abrirModalLimpeza('list')" class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-red-500 shadow-sm transition-all hover:border-red-200 hover:bg-red-50 hover:text-red-700">LIMPAR LISTA</button>
                 </div>
                 <ul id="itemsList" class="space-y-2 text-sm text-slate-600">
                     <!-- JS -->
@@ -244,19 +312,28 @@
         </div>
 
         <!-- PREVIEW -->
-        <div class="w-full lg:w-2/3 flex flex-col bg-slate-200/50 p-4 rounded-3xl border border-slate-300/50 min-h-[calc(100vh-6rem)]">
-            <div id="report-card" class="w-full flex-1 flex flex-col bg-white rounded-none shadow-2xl overflow-hidden border border-slate-100 relative">
+        <div class="w-full lg:w-2/3 flex flex-col bg-gradient-to-br from-slate-100 via-white to-sky-50/40 p-4 rounded-[2rem] border border-slate-200/70 min-h-[calc(100vh-6rem)] shadow-inner">
+            <div id="report-card" class="w-full flex-1 flex flex-col bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 relative">
                 
                 <!-- Cabeçalho -->
-                <div class="bg-gradient-to-br from-[#1e293b] to-[#334155] p-6 text-white relative overflow-hidden flex flex-col justify-start shrink-0 gap-3 antialiased">
-                    <img src="https://i.imgur.com/wEozr34.png" alt="Logo SPG" class="absolute top-4 right-4 w-20 h-20 z-10 rounded-lg">
-                    <div class="absolute -bottom-10 -left-10 text-white/5 z-0">
-                        <i data-lucide="tractor" class="w-48 h-48"></i>
+                <div class="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-700 p-6 text-white relative overflow-hidden flex flex-col justify-start shrink-0 gap-4 antialiased">
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.25),transparent_32%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.18),transparent_28%)]"></div>
+                    <div class="absolute top-5 right-5 z-10 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-white/90 shadow-lg backdrop-blur-sm">
+                        <i data-lucide="clipboard-list" class="w-8 h-8"></i>
                     </div>
-                    <div class="relative z-10 w-full pr-24"> 
-                        <h2 id="reportTitle" class="text-lg font-bold uppercase pb-1 text-white report-text">RELATÓRIO OPERACIONAL</h2>
-                        <div class="mt-3 pt-3 border-t border-white/20">
-                             <span id="headerDateTime" class="text-xs font-medium text-slate-200 block opacity-90 tracking-wide pb-1 report-text"></span>
+                    <div class="relative z-10 w-full pr-20">
+                        <h2 id="reportTitle" class="text-xl sm:text-2xl font-black uppercase leading-tight text-white report-text">RELATÓRIO OPERACIONAL</h2>
+                        <div class="report-header-grid mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-sm px-4 py-3">
+                                <div class="text-[9px] font-bold uppercase tracking-[0.26em] text-slate-300 report-text">Data do turno</div>
+                                <div id="headerDateTime" class="mt-1 text-sm font-semibold text-white report-text"></div>
+                                <div id="headerWeek" class="mt-1 text-[11px] text-slate-300 report-text"></div>
+                            </div>
+                            <div class="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-sm px-4 py-3">
+                                <div class="text-[9px] font-bold uppercase tracking-[0.26em] text-slate-300 report-text">Operador</div>
+                                <div id="headerOperator" class="mt-1 text-sm font-semibold text-white report-text"></div>
+                                <div id="headerTractor" class="mt-1 text-[11px] text-slate-300 report-text"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -265,12 +342,20 @@
                 <div id="summaryHeader" class="bg-white shrink-0"></div>
 
                 <!-- Conteúdo -->
-                <div id="reportContent" class="flex-1 overflow-y-auto bg-slate-100/50 p-4">
-                    <div class="h-full flex items-center justify-center text-center text-slate-400 text-xs italic leading-relaxed">Nenhuma atividade registrada ainda.</div>
+                <div id="reportContent" class="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-5">
+                    <div class="h-full min-h-[240px] flex items-center justify-center">
+                        <div class="max-w-md rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-8 text-center shadow-sm">
+                            <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
+                                <i data-lucide="layout-grid" class="w-6 h-6"></i>
+                            </div>
+                            <div class="text-sm font-bold text-slate-700 report-text">Nenhuma atividade registrada ainda.</div>
+                            <div class="mt-2 text-xs leading-relaxed text-slate-500 report-text">Quando você inserir os lançamentos, eles vão aparecer aqui em blocos organizados, prontos para exportação.</div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Footer Operacional -->
-                <div id="operationalFooter" class="bg-white border-t border-slate-200 p-4 shrink-0"></div>
+                <div id="operationalFooter" class="bg-slate-50 border-t border-slate-200 p-4 shrink-0"></div>
 
                 <!-- Rodapé Marca -->
                 <div class="bg-slate-100 p-3 text-center border-t border-slate-200 shrink-0">
@@ -303,25 +388,66 @@
         </div>
     </div>
 
+    <!-- Modal de Limpeza -->
+    <div id="modalLimpeza" class="fixed inset-0 z-50 hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300 bg-slate-950/60 backdrop-blur-sm">
+        <div id="modalLimpezaContent" class="w-full max-w-md overflow-hidden rounded-[1.75rem] border border-white/10 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.25)] transform scale-95 transition-transform duration-300">
+            <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 px-6 py-5 text-white">
+                <div class="flex items-start gap-4">
+                    <div id="modalLimpezaIcon" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/10">
+                        <i data-lucide="trash-2" class="w-6 h-6"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-300">Atenção</p>
+                        <h3 id="modalLimpezaTitle" class="mt-1 text-xl font-black leading-tight">Limpar conteúdo?</h3>
+                        <p id="modalLimpezaText" class="mt-2 text-sm text-slate-300">Essa ação não pode ser desfeita.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-5">
+                <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                    <p class="text-sm text-slate-600" id="modalLimpezaBody">Você quer apagar os dados selecionados?</p>
+                </div>
+                <div class="mt-5 flex gap-3">
+                    <button type="button" onclick="fecharModalLimpeza()" class="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:bg-slate-50">Cancelar</button>
+                    <button type="button" id="modalLimpezaConfirmBtn" onclick="confirmarLimpeza()" class="flex-1 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-slate-900/20 transition-colors hover:bg-slate-800 flex items-center justify-center gap-2">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        <span>Confirmar</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Dashboard -->
-    <div id="dashboardPage" class="hidden w-full max-w-none px-4 sm:px-6 lg:px-8 mt-4 mb-8">
+    <div id="dashboardPage" class="hidden w-full max-w-none px-4 sm:px-6 lg:px-8 mt-4 mb-8 transition-[filter,opacity] duration-300">
         <div class="rounded-2xl overflow-hidden border border-slate-200 shadow-2xl bg-slate-50">
             <div class="bg-gradient-to-r from-slate-900 to-slate-700 text-white p-4 sm:p-5 flex flex-col gap-4 sticky top-0 z-10">
-                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
                         <p class="text-[10px] uppercase tracking-[0.3em] text-slate-300 font-bold">SPG Oásis</p>
                         <h3 class="text-xl sm:text-2xl font-black">Dashboard operacional</h3>
                         <p id="dashboardUpdatedAt" class="text-xs sm:text-sm text-slate-300 mt-1">Carregando dados...</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button type="button" onclick="carregarDashboard()" class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold transition-colors flex items-center gap-2">
-                            <i data-lucide="refresh-ccw" class="w-4 h-4"></i>
-                            <span>Atualizar</span>
-                        </button>
-                        <button type="button" onclick="fecharDashboard()" class="px-3 py-2 rounded-lg bg-white text-slate-900 hover:bg-slate-100 text-xs font-bold transition-colors flex items-center gap-2">
-                            <i data-lucide="x" class="w-4 h-4"></i>
-                            <span>Voltar ao formulário</span>
-                        </button>
+                    <div class="flex items-center gap-3 ml-auto flex-wrap justify-end">
+                        <div id="dashboardRefreshProgressWrap" class="hidden w-40 sm:w-48 shrink-0 text-[10px] font-bold text-slate-300">
+                            <div class="flex items-center justify-between gap-2">
+                                <span>Atualizando</span>
+                                <span id="dashboardRefreshProgressValue" class="tabular-nums">0%</span>
+                            </div>
+                            <div class="mt-1 h-1.5 rounded-full bg-white/15 overflow-hidden">
+                                <div id="dashboardRefreshProgressBar" class="h-full w-0 rounded-full bg-emerald-400 transition-[width] duration-150"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" id="dashboardRefreshBtn" onclick="atualizarDashboardDados()" class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold transition-colors flex items-center gap-2">
+                                <i data-lucide="refresh-ccw" class="w-4 h-4"></i>
+                                <span>Atualizar</span>
+                            </button>
+                            <button type="button" onclick="fecharDashboard()" class="px-3 py-2 rounded-lg bg-white text-slate-900 hover:bg-slate-100 text-xs font-bold transition-colors flex items-center gap-2">
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                                <span>Voltar ao formulário</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <p id="dashboardStatus" class="text-xs sm:text-sm text-slate-300">Resumo geral dos dados da planilha.</p>
@@ -329,17 +455,24 @@
             <div id="dashboardContent" class="p-4 sm:p-5">
                 <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm mb-4">
                     <div class="flex flex-col gap-1">
-                        <h4 class="text-sm font-black text-slate-800">Parâmetros de custo</h4>
-                        <p class="text-xs text-slate-500">Informe o preço do diesel por litro e o salário mensal do operador para estimar o custo da hora do trator.</p>
+                        <h4 class="text-sm font-black text-slate-800">Custos automáticos</h4>
+                        <p class="text-xs text-slate-500">O salário é lido na aba <strong>Operadores</strong> pelo nome do operador, e o diesel é considerado por serviço a partir do valor informado em cada atividade.</p>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">PREÇO DO DIESEL (R$/L)</label>
-                            <input type="text" inputmode="decimal" id="dashDieselPrice" oninput="atualizarDashboardCustos()" placeholder="Ex: 6,20" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                            <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold">Diesel</div>
+                            <div id="dashDieselSource" class="mt-2 text-sm font-bold text-slate-900">-</div>
+                            <div class="text-xs text-slate-500 mt-1">valor por atividade na planilha</div>
                         </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">SALÁRIO MENSAL DO OPERADOR (R$)</label>
-                            <input type="text" inputmode="decimal" id="dashOperatorSalary" oninput="atualizarDashboardCustos()" placeholder="Ex: 3200,00" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                            <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold">Operador</div>
+                            <div id="dashOperatorSource" class="mt-2 text-sm font-bold text-slate-900">-</div>
+                            <div class="text-xs text-slate-500 mt-1">custo calculado com base em 220h</div>
+                        </div>
+                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                            <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold">Custo por hora</div>
+                            <div id="dashOperatorHourlyRate" class="mt-2 text-sm font-bold text-slate-900">-</div>
+                            <div class="text-xs text-slate-500 mt-1">salário mensal ÷ 220h</div>
                         </div>
                     </div>
                 </div>
@@ -357,36 +490,36 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 mt-4">
                         <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">BLOCO</label>
-                            <select id="dashFilterLocation" onchange="atualizarDashboardFiltros()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700"></select>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">LOCAL</label>
+                            <div id="dashFilterLocation" class="relative"></div>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">CICLO</label>
+                            <div id="dashFilterCycle" class="relative"></div>
                         </div>
                         <div>
                             <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">SERVIÇO</label>
-                            <select id="dashFilterService" onchange="atualizarDashboardFiltros()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700"></select>
+                            <div id="dashFilterService" class="relative"></div>
                         </div>
                         <div>
                             <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">IMPLEMENTO</label>
-                            <select id="dashFilterImplement" onchange="atualizarDashboardFiltros()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700"></select>
+                            <div id="dashFilterImplement" class="relative"></div>
                         </div>
                         <div>
                             <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">SOLICITANTE</label>
-                            <select id="dashFilterRequester" onchange="atualizarDashboardFiltros()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700"></select>
+                            <div id="dashFilterRequester" class="relative"></div>
                         </div>
                         <div>
                             <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">OPERADOR</label>
-                            <select id="dashFilterOperator" onchange="atualizarDashboardFiltros()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700"></select>
+                            <div id="dashFilterOperator" class="relative"></div>
                         </div>
                         <div>
                             <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">TRATOR</label>
-                            <select id="dashFilterTractor" onchange="atualizarDashboardFiltros()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700"></select>
+                            <div id="dashFilterTractor" class="relative"></div>
                         </div>
                         <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">DATA INÍCIO</label>
-                            <input type="date" id="dashFilterStartDate" onchange="atualizarDashboardFiltros()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">DATA FIM</label>
-                            <input type="date" id="dashFilterEndDate" onchange="atualizarDashboardFiltros()" class="w-full p-2 border border-slate-300 rounded text-sm bg-white focus:ring-1 focus:ring-slate-400 outline-none text-slate-700">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">CONTROLE DE PERÍODO</label>
+                            <div id="dashFilterPeriod" class="relative"></div>
                         </div>
                     </div>
                 </div>
@@ -395,77 +528,147 @@
                     <div class="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
                         <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold">Registros</div>
                         <div id="dashTotalRegistros" class="mt-2 text-2xl font-black text-slate-900">-</div>
-                        <div class="text-xs text-slate-500 mt-1">linhas na planilha</div>
+                        <div class="text-xs text-slate-500 mt-1">quantidade de linhas no recorte atual</div>
                     </div>
                     <div class="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
                         <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold">Horas totais</div>
                         <div id="dashTotalHM" class="mt-2 text-2xl font-black text-slate-900">-</div>
-                        <div class="text-xs text-slate-500 mt-1">somatório dos apontamentos</div>
+                        <div class="text-xs text-slate-500 mt-1">somatório das horas trabalhadas no período</div>
                     </div>
                     <div class="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
                         <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold">Combustível</div>
                         <div id="dashTotalCombustivel" class="mt-2 text-2xl font-black text-slate-900">-</div>
-                        <div class="text-xs text-slate-500 mt-1">litros registrados</div>
+                        <div class="text-xs text-slate-500 mt-1">litros lançados nas atividades exibidas</div>
                     </div>
                     <div class="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
                         <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold">Custo da hora</div>
                         <div id="dashCustoHora" class="mt-2 text-2xl font-black text-slate-900">-</div>
-                        <div class="text-xs text-slate-500 mt-1">estimativa por hora</div>
+                        <div class="text-xs text-slate-500 mt-1">custo médio por hora no recorte filtrado</div>
                     </div>
                     <div class="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
                         <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold">Custo estimado</div>
                         <div id="dashCustoTotal" class="mt-2 text-2xl font-black text-slate-900">-</div>
-                        <div class="text-xs text-slate-500 mt-1">no período exibido</div>
+                        <div class="text-xs text-slate-500 mt-1">soma do operador e do diesel no período</div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
-                    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-                        <h4 class="text-sm font-black text-slate-800 mb-3">Blocos com mais horas trabalhadas</h4>
-                        <div id="dashLocations" class="space-y-3"></div>
-                        <div class="mt-4">
-                            <h5 class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold mb-2">Custo estimado por bloco</h5>
-                            <div id="dashLocationsCost" class="space-y-2"></div>
+                <div id="dashboardAssistantPanel" class="bg-slate-900 text-white rounded-2xl p-4 sm:p-5 shadow-sm mb-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                        <div>
+                            <h4 class="text-sm font-black">Assistente IA</h4>
+                            <p class="text-xs text-slate-300 mt-1">Resumo automático do filtro atual com os principais pontos de atenção.</p>
                         </div>
+                        <button type="button" id="dashboardAssistantToggleBtn" onclick="toggleDashboardAssistant()" class="self-start sm:self-auto px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold transition-colors flex items-center gap-2">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                            <span>Mostrar</span>
+                        </button>
                     </div>
-                    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-                        <h4 class="text-sm font-black text-slate-800 mb-3">Serviços com mais horas trabalhadas</h4>
-                        <div id="dashServices" class="space-y-3"></div>
+                    <div id="dashboardAssistantBody" class="hidden">
+                        <div id="dashboardAssistantSummary" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3"></div>
                         <div class="mt-4">
-                            <h5 class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold mb-2">Custo estimado por serviço</h5>
-                            <div id="dashServicesCost" class="space-y-2"></div>
+                            <h5 class="text-[10px] uppercase tracking-[0.18em] text-slate-300 font-bold mb-2">Leitura rápida</h5>
+                            <div id="dashboardAssistantNarrative" class="space-y-2 text-sm text-slate-100"></div>
                         </div>
                     </div>
                 </div>
 
                 <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm mb-4">
-                    <div class="flex items-center justify-between gap-3 mb-3">
-                        <h4 class="text-sm font-black text-slate-800">Total por bloco</h4>
-                        <span id="dashBlocksRowsInfo" class="text-xs text-slate-500"></span>
+                    <h4 class="text-sm font-black text-slate-800">Indicadores por local</h4>
+                    <p class="text-xs text-slate-500 mt-1 mb-4">Compara, no mesmo gráfico, horas trabalhadas, combustível, custo do operador e custo do diesel para cada local do recorte atual.</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-4">
+                        <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>Horas</span>
+                        <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>Combustível</span>
+                        <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>Operador</span>
+                        <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>Diesel</span>
                     </div>
-                    <button type="button" id="dashBlocksToggleBtn" onclick="toggleDashboardTable('dashBlocksTableWrap', 'dashBlocksToggleBtn')" class="mb-3 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors flex items-center gap-2">
-                        <i data-lucide="chevrons-down-up" class="w-4 h-4"></i>
-                        <span>Abrir tabela rolante</span>
-                    </button>
-                    <div id="dashBlocksTableWrap" class="hidden overflow-x-auto max-h-[420px] overflow-y-auto border border-slate-100 rounded-xl">
-                        <table class="w-full min-w-[1100px] text-left text-xs">
-                            <thead class="bg-slate-50 text-slate-500 uppercase tracking-[0.12em]">
-                                <tr>
-                                    <th class="p-3">Bloco</th>
-                                    <th class="p-3">Total de horas</th>
-                                    <th class="p-3">Total de combustível</th>
-                                    <th class="p-3">Custo total do operador</th>
-                                    <th class="p-3">Custo total dos serviços</th>
-                                </tr>
-                            </thead>
-                            <tbody id="dashBlocksRows" class="divide-y divide-slate-100"></tbody>
-                        </table>
+                    <div id="dashCombinedChart"></div>
+                </div>
+
+                <div class="space-y-4 mb-4">
+                    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                        <h4 class="text-sm font-black text-slate-800 mb-3">Locais com mais horas trabalhadas</h4>
+                        <p class="text-xs text-slate-500 -mt-1 mb-3">Mostra quais locais concentraram mais horas no filtro atual, ajudando a identificar onde houve maior uso da máquina.</p>
+                        <div id="dashLocations" class="space-y-3"></div>
+                        <div class="mt-4">
+                            <h5 class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold mb-2">Custo estimado por local</h5>
+                            <p class="text-xs text-slate-500 mb-3">Resume o custo acumulado de cada local, considerando horas, salário do operador e diesel informado por atividade.</p>
+                            <button type="button" id="dashLocationsCostToggleBtn" onclick="toggleDashboardTable('dashLocationsCostTableWrap', 'dashLocationsCostToggleBtn')" class="mb-3 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors flex items-center gap-2">
+                                <i data-lucide="chevrons-down-up" class="w-4 h-4"></i>
+                                <span>Abrir tabela rolante</span>
+                            </button>
+                            <div id="dashLocationsCostTableWrap" class="hidden overflow-x-auto max-h-[420px] overflow-y-auto border border-slate-100 rounded-xl">
+                                <table class="w-full min-w-[1200px] text-left text-xs">
+                                    <thead class="bg-slate-50 text-slate-500 uppercase tracking-[0.12em]">
+                                        <tr>
+                                            <th class="p-3">Local</th>
+                                            <th class="p-3">Ciclo</th>
+                                            <th class="p-3">Total de horas</th>
+                                            <th class="p-3">Diesel usado</th>
+                                            <th class="p-3">Custo total do operador</th>
+                                            <th class="p-3">Custo total do diesel</th>
+                                            <th class="p-3">Custo estimado total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dashLocationsCostRows" class="divide-y divide-slate-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                        <h4 class="text-sm font-black text-slate-800 mb-3">Serviços com mais horas trabalhadas</h4>
+                        <p class="text-xs text-slate-500 -mt-1 mb-3">Ajuda a enxergar quais serviços consumiram mais tempo no recorte selecionado e, na tabela abaixo, quanto cada serviço custou no período.</p>
+                        <div id="dashServices" class="space-y-3"></div>
+                        <div class="mt-4">
+                            <h5 class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold mb-2">Custo estimado por serviço</h5>
+                            <p class="text-xs text-slate-500 mb-3">Mostra o custo estimado de cada serviço somando horas, salário do operador e valor do diesel registrado.</p>
+                            <button type="button" id="dashServicesCostToggleBtn" onclick="toggleDashboardTable('dashServicesCostTableWrap', 'dashServicesCostToggleBtn')" class="mb-3 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors flex items-center gap-2">
+                                <i data-lucide="chevrons-down-up" class="w-4 h-4"></i>
+                                <span>Abrir tabela rolante</span>
+                            </button>
+                            <div id="dashServicesCostTableWrap" class="hidden overflow-x-auto max-h-[420px] overflow-y-auto border border-slate-100 rounded-xl">
+                                <table class="w-full min-w-[1100px] text-left text-xs">
+                                    <thead class="bg-slate-50 text-slate-500 uppercase tracking-[0.12em]">
+                                        <tr>
+                                            <th class="p-3">Serviço</th>
+                                            <th class="p-3">Total de horas</th>
+                                            <th class="p-3">Diesel usado</th>
+                                            <th class="p-3">Custo total do operador</th>
+                                            <th class="p-3">Custo total do diesel</th>
+                                            <th class="p-3">Custo estimado total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dashServicesCostRows" class="divide-y divide-slate-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                        <h4 class="text-sm font-black text-slate-800 mb-3">Consulta de custo por hora do serviço</h4>
+                        <p class="text-xs text-slate-500 -mt-1 mb-3">Use esta tabela para saber quanto custa 1 hora de cada serviço, como concha ou transporte de material.</p>
+                        <button type="button" id="dashServiceHourlyRateToggleBtn" onclick="toggleDashboardTable('dashServiceHourlyRateTableWrap', 'dashServiceHourlyRateToggleBtn')" class="mb-3 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors flex items-center gap-2">
+                            <i data-lucide="chevrons-down-up" class="w-4 h-4"></i>
+                            <span>Abrir tabela rolante</span>
+                        </button>
+                        <div id="dashServiceHourlyRateTableWrap" class="hidden overflow-x-auto max-h-[420px] overflow-y-auto border border-slate-100 rounded-xl">
+                            <table class="w-full min-w-[700px] text-left text-xs">
+                                <thead class="bg-slate-50 text-slate-500 uppercase tracking-[0.12em]">
+                                    <tr>
+                                        <th class="p-3">Serviço</th>
+                                        <th class="p-3">Custo de 1 hora</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashServiceHourlyRateRows" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
                 <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
                     <div class="flex items-center justify-between gap-3 mb-3">
-                        <h4 class="text-sm font-black text-slate-800">Últimos registros</h4>
+                        <div>
+                            <h4 class="text-sm font-black text-slate-800">Últimos registros</h4>
+                            <p class="text-xs text-slate-500 mt-1">Lista as últimas linhas carregadas da planilha para conferência rápida dos detalhes informados.</p>
+                        </div>
                         <span id="dashRowsInfo" class="text-xs text-slate-500"></span>
                     </div>
                     <button type="button" id="dashRecentToggleBtn" onclick="toggleDashboardTable('dashRecentTableWrap', 'dashRecentToggleBtn')" class="mb-3 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors flex items-center gap-2">
@@ -473,18 +676,20 @@
                         <span>Abrir tabela rolante</span>
                     </button>
                     <div id="dashRecentTableWrap" class="hidden overflow-x-auto max-h-[420px] overflow-y-auto border border-slate-100 rounded-xl">
-                        <table class="w-full min-w-[1100px] text-left text-xs">
+                        <table class="w-full min-w-[1200px] text-left text-xs">
                             <thead class="bg-slate-50 text-slate-500 uppercase tracking-[0.12em]">
                                 <tr>
                                     <th class="p-3">Data</th>
                                     <th class="p-3">Operador</th>
                                     <th class="p-3">Trator / Máquina</th>
                                     <th class="p-3">Local</th>
+                                    <th class="p-3">Ciclo</th>
                                     <th class="p-3">Serviço</th>
                                     <th class="p-3">Implemento</th>
                                     <th class="p-3">Solicitante</th>
                                     <th class="p-3">HM</th>
                                     <th class="p-3">Combustível</th>
+                                    <th class="p-3">Diesel</th>
                                     <th class="p-3">Observações</th>
                                 </tr>
                             </thead>
@@ -493,9 +698,17 @@
                     </div>
                 </div>
 
-                <div id="dashboardError" class="hidden mt-4 rounded-2xl border border-red-200 bg-red-50 text-red-700 p-4 text-sm"></div>
-            </div>
+            <div id="dashboardError" class="hidden mt-4 rounded-2xl border border-red-200 bg-red-50 text-red-700 p-4 text-sm"></div>
         </div>
+    </div>
+
+    <div id="dashboardLoadingOverlay" class="hidden fixed inset-0 z-50 bg-slate-950/10 backdrop-blur-sm flex items-center justify-center px-6">
+        <div class="rounded-2xl border border-white/40 bg-white/95 px-5 py-4 shadow-2xl text-center max-w-sm w-full">
+            <div class="mx-auto mb-3 w-10 h-10 rounded-full border-4 border-slate-200 border-t-slate-900 animate-spin"></div>
+            <div class="text-sm font-black text-slate-800">Carregando dados do dashboard</div>
+            <div class="text-xs text-slate-500 mt-1">Aguarde um instante enquanto os filtros e gráficos são preparados.</div>
+        </div>
+    </div>
     </div>
 
     <!-- JAVASCRIPT -->
@@ -503,13 +716,106 @@
         let tasksData = JSON.parse(localStorage.getItem('spg_tractorData')) || [];
         let editingIndex = -1;
         let dashboardDataCache = null;
+        let dashboardCombinedChartPage = 0;
+        let dashboardFilterOpenId = '';
+        let dashboardRefreshProgressTimer = null;
+        let dashboardRefreshProgressToken = 0;
+        const dashboardMultiFilterConfig = [
+            { id: 'dashFilterLocation', stateKey: 'location', dataKey: 'local', label: 'Todos os locais' },
+            { id: 'dashFilterCycle', stateKey: 'cycle', dataKey: 'cycle', label: 'Todos os ciclos' },
+            { id: 'dashFilterService', stateKey: 'service', dataKey: 'service', label: 'Todos os serviços' },
+            { id: 'dashFilterImplement', stateKey: 'implement', dataKey: 'implemento', label: 'Todos os implementos' },
+            { id: 'dashFilterRequester', stateKey: 'requester', dataKey: 'solicitante', label: 'Todos os solicitantes' },
+            { id: 'dashFilterOperator', stateKey: 'operator', dataKey: 'operador', label: 'Todos os operadores' },
+            { id: 'dashFilterTractor', stateKey: 'tractor', dataKey: 'trator', label: 'Todos os tratores' }
+        ];
+        const dashboardFilterState = {
+            location: [],
+            cycle: [],
+            service: [],
+            implement: [],
+            requester: [],
+            operator: [],
+            tractor: [],
+            periodPreset: 'automatic',
+            startDate: '',
+            endDate: ''
+        };
+        const dashboardFilterOptionsByStateKey = {};
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTUpCYBkaz-8Hcrt0KcYmThsix2bC2MNYDtR6dr0U1s8gQ6_gigKsJS_UPDdSZDGs_/exec";
         const DASHBOARD_DATA_URL = `${APPS_SCRIPT_URL}?view=data`;
+        const BRAND_LOGO_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <defs>
+        <linearGradient id="brandBg" x1="64" y1="48" x2="448" y2="464" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#0f766e"/>
+            <stop offset="52%" stop-color="#0f4c81"/>
+            <stop offset="100%" stop-color="#0f172a"/>
+        </linearGradient>
+        <linearGradient id="brandAccent" x1="160" y1="184" x2="352" y2="344" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#f8fafc"/>
+            <stop offset="100%" stop-color="#dbeafe"/>
+        </linearGradient>
+        <linearGradient id="brandMetal" x1="160" y1="220" x2="352" y2="360" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#f8f6ef"/>
+            <stop offset="100%" stop-color="#e2e8f0"/>
+        </linearGradient>
+    </defs>
+    <circle cx="256" cy="256" r="248" fill="url(#brandBg)"/>
+    <circle cx="256" cy="256" r="216" fill="none" stroke="#ffffff" stroke-opacity="0.16" stroke-width="3"/>
+    <circle cx="256" cy="256" r="178" fill="#f8f6ef" fill-opacity="0.98"/>
+    <circle cx="256" cy="256" r="146" fill="#ffffff" fill-opacity="0.7"/>
+    <path d="M164 300c0-11 9-20 20-20h57l30-35c5-6 12-9 20-9h56c10 0 19 5 24 14l17 29h16c11 0 20 9 20 20v19c0 10-8 18-18 18H183c-10 0-19-8-19-18v-18z" fill="url(#brandAccent)"/>
+    <path d="M238 222h68c7 0 13 3 17 9l15 25h-70l-12-20c-3-4-7-7-12-7h-6z" fill="url(#brandMetal)"/>
+    <rect x="272" y="222" width="38" height="68" rx="10" fill="#e2e8f0"/>
+    <rect x="280" y="232" width="22" height="24" rx="4" fill="#ffffff" fill-opacity="0.55"/>
+    <circle cx="196" cy="318" r="58" fill="#0f172a"/>
+    <circle cx="196" cy="318" r="30" fill="#f8f6ef"/>
+    <circle cx="362" cy="330" r="40" fill="#0f172a"/>
+    <circle cx="362" cy="330" r="20" fill="#f8f6ef"/>
+    <path d="M148 300h18c8 0 15-6 16-14l3-16h24l-3 18c-3 20-20 35-40 35h-18z" fill="#0f172a" fill-opacity="0.95"/>
+    <path d="M144 304c0-9 7-16 16-16h12c5 0 10 2 13 6l8 10H144z" fill="#f8f6ef"/>
+    <path d="M260 188v-28" stroke="#0f4c81" stroke-width="14" stroke-linecap="round"/>
+    <circle cx="260" cy="148" r="12" fill="#0f4c81"/>
+    <path d="M126 360h260" stroke="#0f766e" stroke-width="8" stroke-linecap="round" stroke-opacity="0.35"/>
+    <text x="256" y="405" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="800" letter-spacing="2" fill="#0f172a">DT</text>
+    <text x="256" y="438" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="3" fill="#0f766e">DIÁRIO DE UM</text>
+    <text x="256" y="462" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="3" fill="#0f766e">TRATORISTA</text>
+</svg>`.trim();
 
+        function getBrandLogoDataUri() {
+            return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(BRAND_LOGO_SVG)}`;
+        }
+
+        function applyBrandAssets() {
+            const logoUri = getBrandLogoDataUri();
+            const favicon = document.getElementById('siteFavicon');
+            const appleTouchIcon = document.getElementById('siteAppleTouchIcon');
+            const manifestLink = document.getElementById('siteManifest');
+
+            if (favicon) favicon.href = logoUri;
+            if (appleTouchIcon) appleTouchIcon.href = logoUri;
+            if (manifestLink) {
+                const manifest = {
+                    name: 'Diário de um Tratorista',
+                    short_name: 'Tratorista',
+                    start_url: '.',
+                    display: 'standalone',
+                    background_color: '#ffffff',
+                    theme_color: '#ffffff',
+                    icons: [
+                        { src: logoUri, sizes: '192x192', type: 'image/svg+xml' },
+                        { src: logoUri, sizes: '512x512', type: 'image/svg+xml' }
+                    ]
+                };
+                manifestLink.href = `data:application/manifest+json,${encodeURIComponent(JSON.stringify(manifest))}`;
+            }
+        }
+
+        applyBrandAssets();
         lucide.createIcons();
         setDefaultDate();
         loadInputs();
-        loadDashboardInputs();
         
         // --- ORDENAÇÃO AO INICIAR ---
         sortTasksData();
@@ -594,7 +900,11 @@
         function updateDynamicTitle() {
             const dateVal = document.getElementById('reportDate').value;
             const dateStr = formatHeaderDate(dateVal);
-            document.getElementById('headerDateTime').innerText = `Data do Turno: ${dateStr}`;
+            const weekDate = dateVal ? new Date(`${dateVal}T00:00:00`) : new Date();
+            const weekNumber = getWeekNumber(weekDate);
+            document.getElementById('headerDateTime').innerText = `${dateStr}`;
+            const headerWeek = document.getElementById('headerWeek');
+            if (headerWeek) headerWeek.textContent = `Semana ${weekNumber}`;
         }
 
         function getWeekNumber(date) {
@@ -619,41 +929,18 @@
             localStorage.setItem('spg_tractorInputs', JSON.stringify(inputs));
         }
 
-        function saveDashboardInputs() {
-            const inputs = {
-                dieselPrice: document.getElementById('dashDieselPrice')?.value || '',
-                operatorSalary: document.getElementById('dashOperatorSalary')?.value || ''
-            };
-            localStorage.setItem('spg_dashboardInputs', JSON.stringify(inputs));
-        }
-
-        function loadDashboardInputs() {
-            const saved = localStorage.getItem('spg_dashboardInputs');
-            if (!saved) return;
-
-            try {
-                const inputs = JSON.parse(saved);
-                ['dashDieselPrice', 'dashOperatorSalary'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el && inputs[id === 'dashDieselPrice' ? 'dieselPrice' : 'operatorSalary']) {
-                        el.value = inputs[id === 'dashDieselPrice' ? 'dieselPrice' : 'operatorSalary'];
-                    }
-                });
-            } catch (e) {
-                console.error('Erro ao carregar parâmetros do dashboard', e);
-            }
-        }
-
         function saveDashboardFilters() {
             const inputs = {
-                location: document.getElementById('dashFilterLocation')?.value || '',
-                service: document.getElementById('dashFilterService')?.value || '',
-                implement: document.getElementById('dashFilterImplement')?.value || '',
-                requester: document.getElementById('dashFilterRequester')?.value || '',
-                operator: document.getElementById('dashFilterOperator')?.value || '',
-                tractor: document.getElementById('dashFilterTractor')?.value || '',
-                startDate: document.getElementById('dashFilterStartDate')?.value || '',
-                endDate: document.getElementById('dashFilterEndDate')?.value || ''
+                location: Array.isArray(dashboardFilterState.location) ? dashboardFilterState.location : [],
+                cycle: Array.isArray(dashboardFilterState.cycle) ? dashboardFilterState.cycle : [],
+                service: Array.isArray(dashboardFilterState.service) ? dashboardFilterState.service : [],
+                implement: Array.isArray(dashboardFilterState.implement) ? dashboardFilterState.implement : [],
+                requester: Array.isArray(dashboardFilterState.requester) ? dashboardFilterState.requester : [],
+                operator: Array.isArray(dashboardFilterState.operator) ? dashboardFilterState.operator : [],
+                tractor: Array.isArray(dashboardFilterState.tractor) ? dashboardFilterState.tractor : [],
+                periodPreset: typeof dashboardFilterState.periodPreset === 'string' ? dashboardFilterState.periodPreset : 'automatic',
+                startDate: typeof dashboardFilterState.startDate === 'string' ? dashboardFilterState.startDate : '',
+                endDate: typeof dashboardFilterState.endDate === 'string' ? dashboardFilterState.endDate : ''
             };
             localStorage.setItem('spg_dashboardFilters', JSON.stringify(inputs));
         }
@@ -664,77 +951,524 @@
 
             try {
                 const filters = JSON.parse(saved);
-                ['dashFilterLocation', 'dashFilterService', 'dashFilterImplement', 'dashFilterRequester', 'dashFilterOperator', 'dashFilterTractor', 'dashFilterStartDate', 'dashFilterEndDate'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el && typeof filters === 'object') {
-                        const keyMap = {
-                            dashFilterLocation: 'location',
-                            dashFilterService: 'service',
-                            dashFilterImplement: 'implement',
-                            dashFilterRequester: 'requester',
-                            dashFilterOperator: 'operator',
-                            dashFilterTractor: 'tractor',
-                            dashFilterStartDate: 'startDate',
-                            dashFilterEndDate: 'endDate'
-                        };
-                        const key = keyMap[id];
-                        if (filters[key] !== undefined && filters[key] !== null) {
-                            el.value = filters[key];
-                        }
-                    }
-                });
+                if (typeof filters === 'object' && filters) {
+                    dashboardMultiFilterConfig.forEach(config => {
+                        const rawValue = filters[config.stateKey];
+                    dashboardFilterState[config.stateKey] = Array.isArray(rawValue)
+                        ? rawValue.filter(value => typeof value === 'string' && value.trim() !== '')
+                        : (typeof rawValue === 'string' && rawValue.trim() !== '' ? [rawValue] : []);
+                    });
+                    dashboardFilterState.periodPreset = typeof filters.periodPreset === 'string' ? filters.periodPreset : ((filters.startDate || filters.endDate) ? 'custom' : 'automatic');
+                    dashboardFilterState.startDate = typeof filters.startDate === 'string' ? filters.startDate : '';
+                    dashboardFilterState.endDate = typeof filters.endDate === 'string' ? filters.endDate : '';
+                }
             } catch (e) {
                 console.error('Erro ao carregar filtros do dashboard', e);
             }
         }
 
         function populateDashboardFilters(records) {
-            const selectConfig = [
-                { id: 'dashFilterLocation', key: 'local', label: 'Todos os blocos' },
-                { id: 'dashFilterService', key: 'service', label: 'Todos os serviços' },
-                { id: 'dashFilterImplement', key: 'implemento', label: 'Todos os implementos' },
-                { id: 'dashFilterRequester', key: 'solicitante', label: 'Todos os solicitantes' },
-                { id: 'dashFilterOperator', key: 'operador', label: 'Todos os operadores' },
-                { id: 'dashFilterTractor', key: 'trator', label: 'Todos os tratores' }
-            ];
-
-            selectConfig.forEach(({ id, key, label }) => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                const current = el.value;
-                const values = Array.from(new Set((records || []).map(record => record[key]).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'pt-BR'));
-                el.innerHTML = `<option value="">${escapeHtmlDashboard(label)}</option>` + values.map(value => `<option value="${escapeHtmlAttribute(value)}">${escapeHtmlDashboard(value)}</option>`).join('');
-                if (current) el.value = current;
-            });
             loadDashboardFilters();
+            dashboardMultiFilterConfig.forEach(({ id, stateKey, dataKey, label }) => {
+                const container = document.getElementById(id);
+                if (!container) return;
+                const values = Array.from(new Set((records || []).map(record => record[dataKey]).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+                dashboardFilterOptionsByStateKey[stateKey] = values;
+                dashboardFilterState[stateKey] = Array.isArray(dashboardFilterState[stateKey])
+                    ? dashboardFilterState[stateKey].filter(value => values.includes(value))
+                    : [];
+                renderDashboardMultiFilter(container, { id, stateKey, label }, values, dashboardFilterState[stateKey]);
+            });
+            renderDashboardPeriodFilter(document.getElementById('dashFilterPeriod'));
         }
 
         function getDashboardFilters() {
+            const resolvedPeriod = resolveDashboardPeriodRange();
             return {
-                location: document.getElementById('dashFilterLocation')?.value || '',
-                service: document.getElementById('dashFilterService')?.value || '',
-                implement: document.getElementById('dashFilterImplement')?.value || '',
-                requester: document.getElementById('dashFilterRequester')?.value || '',
-                operator: document.getElementById('dashFilterOperator')?.value || '',
-                tractor: document.getElementById('dashFilterTractor')?.value || '',
-                startDate: document.getElementById('dashFilterStartDate')?.value || '',
-                endDate: document.getElementById('dashFilterEndDate')?.value || ''
+                location: Array.isArray(dashboardFilterState.location) ? dashboardFilterState.location : [],
+                cycle: Array.isArray(dashboardFilterState.cycle) ? dashboardFilterState.cycle : [],
+                service: Array.isArray(dashboardFilterState.service) ? dashboardFilterState.service : [],
+                implement: Array.isArray(dashboardFilterState.implement) ? dashboardFilterState.implement : [],
+                requester: Array.isArray(dashboardFilterState.requester) ? dashboardFilterState.requester : [],
+                operator: Array.isArray(dashboardFilterState.operator) ? dashboardFilterState.operator : [],
+                tractor: Array.isArray(dashboardFilterState.tractor) ? dashboardFilterState.tractor : [],
+                startDate: resolvedPeriod.startDate,
+                endDate: resolvedPeriod.endDate
             };
         }
 
-        function atualizarDashboardFiltros() {
+        function getDashboardPeriodPresetLabel(preset) {
+            const labels = {
+                automatic: 'Controle de Período',
+                '7d': '7 dias',
+                '30d': '30 dias',
+                thisMonth: 'Este mês',
+                lastMonth: 'Mês passado',
+                today: 'Hoje',
+                yesterday: 'Ontem',
+                custom: 'Período personalizado'
+            };
+            return labels[preset] || labels.automatic;
+        }
+
+        function getLocalIsoDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function formatDashboardDateBr(dateIso) {
+            if (!dateIso) return '';
+            const [year, month, day] = dateIso.split('-');
+            if (!year || !month || !day) return '';
+            return `${day}/${month}/${year}`;
+        }
+
+        function getDashboardPeriodRangeForPreset(preset) {
+            const today = new Date();
+            const todayIso = getLocalIsoDate(today);
+            if (preset === '7d') {
+                const start = new Date(today);
+                start.setDate(start.getDate() - 6);
+                return { startDate: getLocalIsoDate(start), endDate: todayIso };
+            }
+            if (preset === '30d') {
+                const start = new Date(today);
+                start.setDate(start.getDate() - 29);
+                return { startDate: getLocalIsoDate(start), endDate: todayIso };
+            }
+            if (preset === 'thisMonth') {
+                const start = new Date(today.getFullYear(), today.getMonth(), 1);
+                return { startDate: getLocalIsoDate(start), endDate: todayIso };
+            }
+            if (preset === 'lastMonth') {
+                const start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                const end = new Date(today.getFullYear(), today.getMonth(), 0);
+                return { startDate: getLocalIsoDate(start), endDate: getLocalIsoDate(end) };
+            }
+            if (preset === 'today') {
+                return { startDate: todayIso, endDate: todayIso };
+            }
+            if (preset === 'yesterday') {
+                const start = new Date(today);
+                start.setDate(start.getDate() - 1);
+                const yesterdayIso = getLocalIsoDate(start);
+                return { startDate: yesterdayIso, endDate: yesterdayIso };
+            }
+            return { startDate: '', endDate: '' };
+        }
+
+        function resolveDashboardPeriodRange() {
+            const preset = typeof dashboardFilterState.periodPreset === 'string' ? dashboardFilterState.periodPreset : 'automatic';
+            if (preset === 'custom') {
+                return {
+                    startDate: dashboardFilterState.startDate || '',
+                    endDate: dashboardFilterState.endDate || ''
+                };
+            }
+            if (preset === 'automatic') {
+                return { startDate: '', endDate: '' };
+            }
+            return getDashboardPeriodRangeForPreset(preset);
+        }
+
+        function getDashboardPeriodDisplayLabel() {
+            const preset = typeof dashboardFilterState.periodPreset === 'string' ? dashboardFilterState.periodPreset : 'automatic';
+            if (preset === 'custom') {
+                const startLabel = formatDashboardDateBr(dashboardFilterState.startDate || '');
+                const endLabel = formatDashboardDateBr(dashboardFilterState.endDate || '');
+                if (startLabel && endLabel) return `${startLabel} - ${endLabel}`;
+                if (startLabel) return `A partir de ${startLabel}`;
+                if (endLabel) return `Até ${endLabel}`;
+                return getDashboardPeriodPresetLabel('custom');
+            }
+            if (preset === 'automatic') return getDashboardPeriodPresetLabel('automatic');
+            return getDashboardPeriodPresetLabel(preset);
+        }
+
+        function getDashboardPeriodInputValues() {
+            const preset = typeof dashboardFilterState.periodPreset === 'string' ? dashboardFilterState.periodPreset : 'automatic';
+            if (preset === 'custom') {
+                return {
+                    startDate: dashboardFilterState.startDate || '',
+                    endDate: dashboardFilterState.endDate || ''
+                };
+            }
+            const resolved = resolveDashboardPeriodRange();
+            return {
+                startDate: resolved.startDate || '',
+                endDate: resolved.endDate || ''
+            };
+        }
+
+        function renderDashboardPeriodFilter(container) {
+            if (!container) return;
+
+            const panelId = 'dashFilterPeriodPanel';
+            const buttonId = 'dashFilterPeriodButton';
+            const isOpen = dashboardFilterOpenId === 'dashFilterPeriod';
+            const currentLabel = getDashboardPeriodDisplayLabel();
+            const inputValues = getDashboardPeriodInputValues();
+            const presetActive = typeof dashboardFilterState.periodPreset === 'string' ? dashboardFilterState.periodPreset : 'automatic';
+
+            const quickPresetButton = (preset, label) => `
+                <button
+                    type="button"
+                    onclick="setDashboardPeriodPreset('${preset}')"
+                    class="rounded-lg border px-3 py-2 text-sm font-bold transition-colors ${
+                        presetActive === preset
+                            ? 'border-sky-300 bg-sky-50 text-sky-700'
+                            : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-slate-100'
+                    }"
+                >${label}</button>
+            `;
+
+            container.innerHTML = `
+                <div class="relative" data-dashboard-filter-root="dashFilterPeriod">
+                    <button
+                        type="button"
+                        id="${buttonId}"
+                        data-container-id="dashFilterPeriod"
+                        onclick="toggleDashboardPeriodPanel()"
+                        class="flex w-full items-center justify-between gap-3 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-sm text-slate-800 shadow-md transition-colors hover:border-sky-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    >
+                        <span class="truncate font-semibold">${escapeHtmlDashboard(currentLabel)}</span>
+                        <i data-lucide="${isOpen ? 'chevron-up' : 'chevron-down'}" class="w-4 h-4 shrink-0 text-slate-500"></i>
+                    </button>
+                    <div
+                        id="${panelId}"
+                        data-dashboard-filter-panel
+                        class="${isOpen ? '' : 'hidden'} absolute left-0 top-full z-30 mt-2 w-[340px] max-w-[calc(100vw-2rem)] rounded-2xl border border-slate-200 bg-white p-3 shadow-md"
+                    >
+                        <div class="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 mb-2">Controle de Período</div>
+                        <div class="grid grid-cols-2 gap-2">
+                            ${quickPresetButton('7d', '7 dias')}
+                            ${quickPresetButton('30d', '30 dias')}
+                            ${quickPresetButton('thisMonth', 'Este mês')}
+                            ${quickPresetButton('lastMonth', 'Mês passado')}
+                            ${quickPresetButton('today', 'Hoje')}
+                            ${quickPresetButton('yesterday', 'Ontem')}
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Início</label>
+                                <input
+                                    type="date"
+                                    id="dashFilterPeriodStart"
+                                    value="${escapeHtmlAttribute(inputValues.startDate || '')}"
+                                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm outline-none focus:border-sky-300 focus:ring-2 focus:ring-sky-200"
+                                >
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Fim</label>
+                                <input
+                                    type="date"
+                                    id="dashFilterPeriodEnd"
+                                    value="${escapeHtmlAttribute(inputValues.endDate || '')}"
+                                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm outline-none focus:border-sky-300 focus:ring-2 focus:ring-sky-200"
+                                >
+                            </div>
+                        </div>
+                        <div class="mt-3 flex flex-wrap items-center justify-end gap-2">
+                            <button type="button" onclick="clearDashboardPeriodInputs()" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors">Limpar</button>
+                            <button type="button" onclick="setDashboardPeriodAutomatic()" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors">Automático</button>
+                            <button type="button" onclick="cancelDashboardPeriodSelection()" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors">Cancelar</button>
+                            <button type="button" onclick="applyDashboardPeriodSelection()" class="px-3 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs font-bold text-white transition-colors">Aplicar</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function syncDashboardPeriodFilter() {
+            renderDashboardPeriodFilter(document.getElementById('dashFilterPeriod'));
+        }
+
+        function syncDashboardPeriodButtonState() {
+            const button = document.getElementById('dashFilterPeriodButton');
+            const panel = document.getElementById('dashFilterPeriodPanel');
+            if (!button || !panel) return;
+            const isOpen = !panel.classList.contains('hidden');
+            button.innerHTML = `
+                <span class="truncate font-semibold">${escapeHtmlDashboard(getDashboardPeriodDisplayLabel())}</span>
+                <i data-lucide="${isOpen ? 'chevron-up' : 'chevron-down'}" class="w-4 h-4 shrink-0 text-slate-500"></i>
+            `;
+            lucide.createIcons();
+        }
+
+        function toggleDashboardPeriodPanel() {
+            const panel = document.getElementById('dashFilterPeriodPanel');
+            if (!panel) return;
+
+            const willOpen = panel.classList.contains('hidden');
+            dashboardFilterOpenId = willOpen ? 'dashFilterPeriod' : '';
+            closeDashboardMultiFilterPanels('dashFilterPeriod');
+            panel.classList.toggle('hidden');
+            syncDashboardPeriodButtonState();
+        }
+
+        function setDashboardPeriodSelection(periodPreset, startDate = '', endDate = '') {
+            dashboardFilterState.periodPreset = periodPreset;
+            dashboardFilterState.startDate = startDate || '';
+            dashboardFilterState.endDate = endDate || '';
             saveDashboardFilters();
+            dashboardCombinedChartPage = 0;
+            dashboardFilterOpenId = '';
+            closeDashboardMultiFilterPanels();
+            syncDashboardMultiFilterButtons();
+            syncDashboardPeriodFilter();
             if (dashboardDataCache) {
                 renderDashboard(dashboardDataCache);
             }
         }
 
-        function limparFiltrosDashboard() {
-            ['dashFilterLocation', 'dashFilterService', 'dashFilterImplement', 'dashFilterRequester', 'dashFilterOperator', 'dashFilterTractor', 'dashFilterStartDate', 'dashFilterEndDate'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.value = '';
+        function setDashboardPeriodPreset(periodPreset) {
+            if (periodPreset === 'automatic') {
+                setDashboardPeriodSelection('automatic', '', '');
+                return;
+            }
+            const range = getDashboardPeriodRangeForPreset(periodPreset);
+            setDashboardPeriodSelection(periodPreset, range.startDate, range.endDate);
+        }
+
+        function clearDashboardPeriodInputs() {
+            const startInput = document.getElementById('dashFilterPeriodStart');
+            const endInput = document.getElementById('dashFilterPeriodEnd');
+            if (startInput) startInput.value = '';
+            if (endInput) endInput.value = '';
+        }
+
+        function cancelDashboardPeriodSelection() {
+            dashboardFilterOpenId = '';
+            closeDashboardMultiFilterPanels();
+            syncDashboardMultiFilterButtons();
+            syncDashboardPeriodFilter();
+        }
+
+        function setDashboardPeriodAutomatic() {
+            setDashboardPeriodSelection('automatic', '', '');
+        }
+
+        function applyDashboardPeriodSelection() {
+            let startDate = document.getElementById('dashFilterPeriodStart')?.value || '';
+            let endDate = document.getElementById('dashFilterPeriodEnd')?.value || '';
+            if (!startDate && !endDate) {
+                setDashboardPeriodSelection('automatic', '', '');
+                return;
+            }
+            if (startDate && endDate && startDate > endDate) {
+                [startDate, endDate] = [endDate, startDate];
+            }
+            setDashboardPeriodSelection('custom', startDate, endDate);
+        }
+
+        function getDashboardMultiFilterDisplayLabel(stateKey) {
+            const selectedValues = Array.isArray(dashboardFilterState[stateKey]) ? dashboardFilterState[stateKey] : [];
+            const availableValues = dashboardFilterOptionsByStateKey[stateKey] || [];
+            const isAllSelected = selectedValues.length === 0 || (availableValues.length > 0 && selectedValues.length === availableValues.length);
+            if (isAllSelected) return 'Todos';
+            if (selectedValues.length === 1) return selectedValues[0];
+            return `${selectedValues.length} selecionados`;
+        }
+
+        function renderDashboardMultiFilter(container, config, values, selectedValues) {
+            if (!container) return;
+
+            const panelId = `${config.id}Panel`;
+            const buttonId = `${config.id}Button`;
+            const isOpen = dashboardFilterOpenId === config.id;
+            const selectedSet = new Set(Array.isArray(selectedValues) ? selectedValues : []);
+            const isAllSelected = selectedSet.size === 0 || selectedSet.size === values.length;
+            const optionRows = values.map(value => {
+                const checked = isAllSelected || selectedSet.has(value);
+                return `
+                    <label class="group flex items-center justify-between gap-3 rounded-md px-3 py-2 hover:bg-slate-100 cursor-pointer transition-colors">
+                        <span class="flex min-w-0 items-center gap-2">
+                            <input
+                                type="checkbox"
+                                class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                                ${checked ? 'checked' : ''}
+                                data-value="${escapeHtmlAttribute(value)}"
+                                onchange="setDashboardMultiFilterSelection('${config.stateKey}', this.dataset.value, this.checked)"
+                            >
+                            <span class="truncate text-sm font-medium text-slate-700">${escapeHtmlDashboard(value)}</span>
+                        </span>
+                        <button
+                            type="button"
+                            onclick="isolateDashboardMultiFilterValue('${config.stateKey}', '${escapeHtmlAttribute(value)}')"
+                            class="text-xs font-semibold text-sky-600 transition-colors opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
+                        >Somente</button>
+                    </label>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="relative" data-dashboard-filter-root="${config.id}">
+                    <button
+                        type="button"
+                        id="${buttonId}"
+                        data-dashboard-filter-button="true"
+                        data-container-id="${config.id}"
+                        data-state-key="${config.stateKey}"
+                        onclick="toggleDashboardMultiFilterPanel('${config.id}')"
+                        class="flex w-full items-center justify-between gap-3 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-sm text-slate-800 shadow-md transition-colors hover:border-sky-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    >
+                        <span class="truncate font-semibold">${escapeHtmlDashboard(getDashboardMultiFilterDisplayLabel(config.stateKey))}</span>
+                        <i data-lucide="${isOpen ? 'chevron-up' : 'chevron-down'}" class="w-4 h-4 shrink-0 text-slate-500"></i>
+                    </button>
+                    <div
+                        id="${panelId}"
+                        data-dashboard-filter-panel
+                        class="${isOpen ? '' : 'hidden'} absolute left-0 right-0 z-30 mt-2 rounded-lg border border-slate-200 bg-white p-2 shadow-md"
+                    >
+                        <div class="max-h-64 space-y-1 overflow-y-auto">
+                            <label class="flex items-center justify-between gap-3 rounded-md px-3 py-2 hover:bg-slate-100 cursor-pointer transition-colors">
+                                <span class="flex min-w-0 items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                                        ${isAllSelected ? 'checked' : ''}
+                                        data-value="__ALL__"
+                                        onchange="setDashboardMultiFilterSelection('${config.stateKey}', '__ALL__', this.checked)"
+                                    >
+                                    <span class="truncate text-sm font-semibold text-slate-700">Todos</span>
+                                </span>
+                                <span class="text-xs font-semibold text-sky-600">Limpar</span>
+                            </label>
+                            ${optionRows}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function closeDashboardMultiFilterPanels(exceptId = '') {
+            document.querySelectorAll('[data-dashboard-filter-panel]').forEach(panel => {
+                if (panel.id !== `${exceptId}Panel`) {
+                    panel.classList.add('hidden');
+                }
             });
+            if (!exceptId) {
+                dashboardFilterOpenId = '';
+            }
+        }
+
+        function syncDashboardMultiFilterButtons() {
+            document.querySelectorAll('[data-dashboard-filter-button="true"]').forEach(button => {
+                const containerId = button.dataset.containerId || '';
+                const stateKey = button.dataset.stateKey || '';
+                const panel = document.getElementById(`${containerId}Panel`);
+                const isOpen = !!panel && !panel.classList.contains('hidden');
+                const label = getDashboardMultiFilterDisplayLabel(stateKey);
+                button.innerHTML = `
+                    <span class="truncate font-semibold">${escapeHtmlDashboard(label)}</span>
+                    <i data-lucide="${isOpen ? 'chevron-up' : 'chevron-down'}" class="w-4 h-4 shrink-0 text-slate-500"></i>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        function toggleDashboardMultiFilterPanel(containerId) {
+            const panel = document.getElementById(`${containerId}Panel`);
+            const button = document.getElementById(`${containerId}Button`);
+            if (!panel || !button) return;
+
+            const willOpen = panel.classList.contains('hidden');
+            dashboardFilterOpenId = willOpen ? containerId : '';
+            closeDashboardMultiFilterPanels(containerId);
+            panel.classList.toggle('hidden');
+            syncDashboardMultiFilterButtons();
+            syncDashboardPeriodFilter();
+        }
+
+        document.addEventListener('click', (event) => {
+            const openContainerId = dashboardFilterOpenId;
+            if (!openContainerId) return;
+
+            const root = document.querySelector(`[data-dashboard-filter-root="${openContainerId}"]`);
+            if (root && root.contains(event.target)) return;
+
+            closeDashboardMultiFilterPanels();
+            syncDashboardMultiFilterButtons();
+            syncDashboardPeriodFilter();
+        });
+
+        function setDashboardMultiFilterSelection(stateKey, value, checked) {
+            const availableValues = dashboardFilterOptionsByStateKey[stateKey] || [];
+            let nextValues = Array.isArray(dashboardFilterState[stateKey]) ? [...dashboardFilterState[stateKey]] : [];
+
+            if (value === '__ALL__') {
+                nextValues = [];
+            } else if (nextValues.length === 0) {
+                nextValues = checked ? [value] : availableValues.filter(item => item !== value);
+            } else if (checked) {
+                nextValues = [...nextValues, value];
+            } else {
+                nextValues = nextValues.filter(item => item !== value);
+            }
+
+            nextValues = Array.from(new Set(nextValues)).filter(item => availableValues.includes(item));
+            if (availableValues.length > 0 && nextValues.length === availableValues.length) {
+                nextValues = [];
+            }
+
+            dashboardFilterState[stateKey] = nextValues;
             saveDashboardFilters();
+            dashboardCombinedChartPage = 0;
+            if (dashboardDataCache) {
+                renderDashboard(dashboardDataCache);
+            }
+        }
+
+        function isolateDashboardMultiFilterValue(stateKey, value) {
+            const availableValues = dashboardFilterOptionsByStateKey[stateKey] || [];
+            if (!availableValues.includes(value)) return;
+            dashboardFilterState[stateKey] = [value];
+            saveDashboardFilters();
+            dashboardCombinedChartPage = 0;
+            if (dashboardDataCache) {
+                renderDashboard(dashboardDataCache);
+            }
+        }
+
+        function matchesDashboardMultiFilter(selectedValues, recordValue) {
+            if (!Array.isArray(selectedValues) || selectedValues.length === 0) return true;
+            return selectedValues.includes(recordValue || '');
+        }
+
+        function atualizarDashboardCombinedChartPage(delta) {
+            dashboardCombinedChartPage = Math.max(0, dashboardCombinedChartPage + delta);
+            if (dashboardDataCache) {
+                renderDashboard(dashboardDataCache);
+            }
+        }
+
+        function toggleDashboardAssistant() {
+            const body = document.getElementById('dashboardAssistantBody');
+            const button = document.getElementById('dashboardAssistantToggleBtn');
+            if (!body || !button) return;
+
+            const isHidden = body.classList.toggle('hidden');
+            button.innerHTML = isHidden
+                ? '<i data-lucide="eye" class="w-4 h-4"></i><span>Mostrar</span>'
+                : '<i data-lucide="eye-off" class="w-4 h-4"></i><span>Ocultar</span>';
+            lucide.createIcons();
+        }
+
+        function limparFiltrosDashboard() {
+            dashboardMultiFilterConfig.forEach(config => {
+                dashboardFilterState[config.stateKey] = [];
+            });
+            dashboardFilterState.periodPreset = 'automatic';
+            dashboardFilterState.startDate = '';
+            dashboardFilterState.endDate = '';
+            dashboardFilterOpenId = '';
+            syncDashboardMultiFilterButtons();
+            syncDashboardPeriodFilter();
+            saveDashboardFilters();
+            dashboardCombinedChartPage = 0;
             if (dashboardDataCache) {
                 renderDashboard(dashboardDataCache);
             }
@@ -818,7 +1552,7 @@
 
         // --- FORMULÁRIO ---
         function clearTaskForm() {
-            ['taskLocation','taskService','taskImplement','taskRequester','taskStartHM','taskEndHM','taskFuel','taskNotes'].forEach(id => {
+            ['taskLocation','taskCycle','taskService','taskImplement','taskRequester','taskStartHM','taskEndHM','taskFuel','taskDieselPrice','taskNotes'].forEach(id => {
                 const el = document.getElementById(id);
                 if(el) el.value = '';
             });
@@ -855,17 +1589,20 @@
             const impSel = document.getElementById('taskImplementSelect')?.value || '';
             const reqSel = document.getElementById('taskRequesterSelect')?.value || '';
             const location = locSel === 'Outro' ? (document.getElementById('taskLocation')?.value || 'Não informado') : (locSel || 'Não informado');
+            const cycle = document.getElementById('taskCycle')?.value || '';
             const service = srvSel === 'Outro' ? (document.getElementById('taskService')?.value || 'Não informado') : (srvSel || 'Não informado');
             const implement = impSel === 'Outro' ? (document.getElementById('taskImplement')?.value || 'Não informado') : (impSel || 'Não informado');
             const requester = reqSel === 'Outro' ? (document.getElementById('taskRequester')?.value || 'Não informado') : (reqSel || 'Não informado');
             const item = {
                 location: location,
+                cycle: cycle,
                 service: service,
                 implement: implement,
                 requester: requester,
                 startHM: document.getElementById('taskStartHM')?.value || '',
                 endHM: document.getElementById('taskEndHM')?.value || '',
                 fuel: document.getElementById('taskFuel')?.value || '',
+                dieselPrice: document.getElementById('taskDieselPrice')?.value || '',
                 notes: document.getElementById('taskNotes')?.value || ''
             };
             if (editingIndex >= 0) tasksData[editingIndex] = item;
@@ -897,6 +1634,7 @@
                 }
                 restoreFieldState('taskLocationSelect', 'taskLocation');
             }
+            if (document.getElementById('taskCycle')) document.getElementById('taskCycle').value = item.cycle || '';
             const itemService = item.service === 'Não informado' ? '' : item.service;
             const knownServices = ['Roçagem (Trituração)', 'Incorporação (Gradagem Pesada)', 'Encanteiramento', 'Distribuição de Calcário e Adubo', 'Aração e Gradagem', 'Subsolagem', 'Transporte da Colheita', 'Transporte de Material'];
             const taskServiceSelect = document.getElementById('taskServiceSelect');
@@ -932,7 +1670,7 @@
                 restoreFieldState('taskImplementSelect', 'taskImplement');
             }
             const itemRequester = item.requester === 'Não informado' ? '' : item.requester;
-            const knownRequesters = ['José Márcio', 'Claudio Soares', 'Assis Paulo'];
+            const knownRequesters = ['Claudio Soares', 'Assis Paulo'];
             const taskRequesterSelect = document.getElementById('taskRequesterSelect');
             const taskRequester = document.getElementById('taskRequester');
             if(taskRequesterSelect && taskRequester) {
@@ -951,6 +1689,7 @@
             if(document.getElementById('taskStartHM')) document.getElementById('taskStartHM').value = item.startHM || '';
             if(document.getElementById('taskEndHM')) document.getElementById('taskEndHM').value = item.endHM || '';
             if(document.getElementById('taskFuel')) document.getElementById('taskFuel').value = item.fuel || '';
+            if(document.getElementById('taskDieselPrice')) document.getElementById('taskDieselPrice').value = item.dieselPrice || '';
             if(document.getElementById('taskNotes')) document.getElementById('taskNotes').value = item.notes || '';
             const btn = document.getElementById('submitBtn');
             if(btn) {
@@ -977,13 +1716,70 @@
         }
 
         function clearAll() {
-            if(confirm('Limpar todas as atividades registradas?')) {
+            tasksData = [];
+            saveData();
+            clearTaskForm();
+            renderReport();
+            renderList();
+        }
+
+        function abrirModalLimpeza(target) {
+            const modal = document.getElementById('modalLimpeza');
+            const content = document.getElementById('modalLimpezaContent');
+            const title = document.getElementById('modalLimpezaTitle');
+            const text = document.getElementById('modalLimpezaText');
+            const body = document.getElementById('modalLimpezaBody');
+            const confirmBtn = document.getElementById('modalLimpezaConfirmBtn');
+            if (!modal || !content || !title || !text || !body || !confirmBtn) return;
+
+            const isList = target === 'list';
+            modal.dataset.target = isList ? 'list' : 'form';
+            title.textContent = isList ? 'Limpar lista de atividades?' : 'Limpar formulário?';
+            text.textContent = isList
+                ? 'Essa ação apaga todas as atividades registradas agora.'
+                : 'Essa ação limpa apenas os campos do formulário.';
+            body.textContent = isList
+                ? 'Se você confirmar, todas as atividades deste relatório serão removidas.'
+                : 'Se você confirmar, os dados preenchidos nos campos serão apagados.';
+            confirmBtn.innerHTML = isList
+                ? '<i data-lucide="trash-2" class="w-4 h-4"></i><span>Limpar lista</span>'
+                : '<i data-lucide="eraser" class="w-4 h-4"></i><span>Limpar formulário</span>';
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+            lucide.createIcons();
+        }
+
+        function fecharModalLimpeza() {
+            const modal = document.getElementById('modalLimpeza');
+            const content = document.getElementById('modalLimpezaContent');
+            if (!modal || !content) return;
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                delete modal.dataset.target;
+            }, 220);
+        }
+
+        function confirmarLimpeza() {
+            const modal = document.getElementById('modalLimpeza');
+            const target = modal?.dataset.target || 'form';
+            fecharModalLimpeza();
+            if (target === 'list') {
                 tasksData = [];
                 saveData();
                 clearTaskForm();
                 renderReport();
                 renderList();
+                return;
             }
+            clearTaskForm();
         }
 
         function renderList() {
@@ -996,7 +1792,7 @@
                     <li class="flex justify-between items-center p-2 rounded border ${active} transition-all">
                         <div class="flex flex-col">
                             <span class="font-bold text-slate-700 text-xs pb-0.5 report-text">${item.location}</span>
-                            <span class="text-[10px] text-slate-500 pb-0.5 report-text">${item.service} (HM: ${item.startHM || '-'} - ${item.endHM || '-'})</span>
+                            <span class="text-[10px] text-slate-500 pb-0.5 report-text">${item.service} | Ciclo: ${item.cycle || '-'} (HM: ${item.startHM || '-'} - ${item.endHM || '-'})</span>
                         </div>
                         <div class="flex items-center">
                             <button onclick="editItem(${index})" class="text-blue-500 hover:bg-blue-100 p-1.5 rounded-md mr-1"><i data-lucide="pencil" width="14"></i></button>
@@ -1018,82 +1814,10 @@
             const opName = opSel === 'Outro' ? (document.getElementById('operatorName')?.value || '-') : opSel;
             const tracSel = document.getElementById('tractorSelect')?.value || '';
             const tracName = tracSel === 'Outro' ? (document.getElementById('tractorName')?.value || '-') : tracSel;
-            summaryHeader.innerHTML = `
-                <div class="bg-white border-b border-slate-200 p-4 flex justify-around items-center">
-                    <div class="flex flex-col items-center w-1/2 px-2">
-                        <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1 mb-1 pb-1 report-text">Operador</span>
-                        <span class="text-sm font-extrabold text-slate-800 text-center pb-1 report-text">${opName}</span>
-                    </div>
-                    <div class="w-px h-10 bg-slate-200"></div>
-                    <div class="flex flex-col items-center w-1/2 px-2">
-                        <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1 mb-1 pb-1 report-text">Máquina/Trator</span>
-                        <span class="text-sm font-extrabold text-slate-800 text-center pb-1 report-text">${tracName}</span>
-                    </div>
-                </div>`;
-            if (!tasksData.length) {
-                container.innerHTML = `<div class="h-full flex items-center justify-center text-center text-slate-400 text-xs italic">Nenhuma atividade adicionada no formulário.</div>`;
-            } else {
-                container.innerHTML = '';
-                tasksData.forEach((item, index) => {
-                    const hmHours = calculateTaskHours(item.startHM, item.endHM);
-                    const hmDiff = hmHours > 0 ? formatDisplayHM(hmHours) : '-';
-                    container.innerHTML += `
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-4 last:mb-0">
-                        <div class="bg-white px-4 py-3 border-b border-slate-100 flex items-center gap-2">
-                            <div class="text-sm font-extrabold text-slate-800 shrink-0 pb-1 report-text">
-                                ${index + 1}.
-                            </div>
-                            <div class="flex flex-col flex-1 overflow-hidden">
-                                <span class="text-sm font-extrabold text-slate-800 block pb-1 report-text break-words">${item.location}</span>
-                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block pb-1 report-text break-words">${item.service}</span>
-                            </div>
-                        </div>
-                        <div class="p-4">
-                            <div class="flex gap-3 mb-4">
-                                <div class="flex-1 bg-slate-50 rounded-lg p-2.5 border border-slate-100 overflow-hidden">
-                                    <span class="text-[8px] text-slate-400 uppercase tracking-wider font-bold block mb-1 pb-1 report-text">Implemento Utilizado</span>
-                                    <span class="text-xs font-bold text-slate-700 block pb-1 report-text break-words">${item.implement}</span>
-                                </div>
-                                <div class="flex-1 bg-slate-50 rounded-lg p-2.5 border border-slate-100 overflow-hidden">
-                                    <span class="text-[8px] text-slate-400 uppercase tracking-wider font-bold block mb-1 pb-1 report-text">Solicitado Por</span>
-                                    <span class="text-xs font-bold text-slate-700 block pb-1 report-text break-words">${item.requester}</span>
-                                </div>
-                            </div>
-                            <div class="flex items-center justify-between bg-white border border-slate-200 rounded-lg p-3">
-                                <div class="flex flex-col items-center flex-1">
-                                    <span class="text-[8px] uppercase font-bold text-slate-400 tracking-wider pb-1 report-text">H. Inicial</span>
-                                    <span class="font-extrabold text-sm text-slate-700 mt-0.5 pb-1 report-text block">${item.startHM || '-'}</span>
-                                </div>
-                                <div class="text-slate-300 px-2"><i data-lucide="arrow-right" class="w-4 h-4"></i></div>
-                                <div class="flex flex-col items-center flex-1">
-                                    <span class="text-[8px] uppercase font-bold text-slate-400 tracking-wider pb-1 report-text">H. Final</span>
-                                    <span class="font-extrabold text-sm text-slate-700 mt-0.5 pb-1 report-text block">${item.endHM || '-'}</span>
-                                </div>
-                                <div class="w-px h-8 bg-slate-200 mx-2"></div>
-                                <div class="flex flex-col items-center flex-1">
-                                    <span class="text-[8px] uppercase font-bold text-blue-500 tracking-wider pb-1 report-text">Total HM</span>
-                                    <span class="font-extrabold text-sm text-blue-700 mt-0.5 pb-1 report-text block">${hmDiff}${hmDiff !== '-' ? ' H' : ''}</span>
-                                </div>
-                            </div>
-                            ${item.fuel ? `
-                            <div class="mt-3 flex items-center justify-between bg-amber-50/60 border border-amber-100/80 rounded-lg p-2.5 px-3">
-                                <div class="flex items-center gap-2 text-amber-600">
-                                    <i data-lucide="fuel" class="w-4 h-4"></i>
-                                    <span class="text-[9px] uppercase font-bold tracking-wider pb-1 report-text">Combustível</span>
-                                </div>
-                                <span class="font-extrabold text-xs text-amber-700 pb-1 report-text block">${item.fuel} Litros</span>
-                            </div>
-                            ` : ''}
-                            ${item.notes ? `
-                            <div class="mt-3 text-[10px] text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                                <strong class="text-slate-600 uppercase tracking-wider text-[9px] block mb-1 pb-1 report-text">Observações:</strong> 
-                                <span class="block pb-1 report-text">${item.notes}</span>
-                            </div>
-                            ` : ''}
-                        </div>
-                    </div>`;
-                });
-            }
+            const headerOperator = document.getElementById('headerOperator');
+            const headerTractor = document.getElementById('headerTractor');
+            if (headerOperator) headerOperator.textContent = opName;
+            if (headerTractor) headerTractor.textContent = tracName;
             let totalHM = 0;
             let totalFuel = 0;
             tasksData.forEach(item => {
@@ -1106,25 +1830,91 @@
                     totalFuel += fuelVal;
                 }
             });
-            if (totalHM > 0 || totalFuel > 0) {
-                footer.style.display = 'block';
-                let footerHtml = `<div class="grid grid-cols-${totalHM > 0 && totalFuel > 0 ? '2' : '1'} gap-3">`;
-                if (totalHM > 0) {
-                    footerHtml += `
-                        <div class="flex flex-col items-center justify-center bg-slate-50 border border-slate-200 rounded-lg p-3">
-                            <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1 text-center pb-1 report-text">TOTAL HM (DIA)</span>
-                            <span class="text-slate-900 font-extrabold text-lg pb-1 report-text block">${formatDisplayHM(totalHM)} H</span>
-                        </div>`;
-                }
-                if (totalFuel > 0) {
-                    footerHtml += `
-                        <div class="flex flex-col items-center justify-center bg-blue-50 border border-blue-200 rounded-lg p-3">
-                            <span class="text-[9px] font-bold text-blue-500 uppercase tracking-widest mb-1 text-center pb-1 report-text">TOTAL COMBUSTÍVEL (DIA)</span>
-                            <span class="text-blue-900 font-extrabold text-lg pb-1 report-text block">${formatDisplayHM(totalFuel)} L</span>
-                        </div>`;
-                }
-                footerHtml += `</div>`;
-                footer.innerHTML = footerHtml;
+            summaryHeader.innerHTML = `
+                <div class="bg-white border-b border-slate-200 px-4 sm:px-5 py-4">
+                    <div class="report-kpi-grid grid grid-cols-1 gap-3 sm:[grid-template-columns:0.82fr_1.09fr_1.09fr]">
+                        <div class="min-h-[84px] rounded-2xl border border-slate-200 bg-white px-3.5 py-3 flex items-center justify-between gap-3 shadow-sm">
+                            <div>
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.24em] report-text block">Registros</span>
+                                <span class="mt-1 text-[11px] text-slate-500 report-text block">Atividades no painel</span>
+                            </div>
+                            <span class="shrink-0 whitespace-nowrap text-slate-900 font-black text-[1.75rem] leading-none report-text">${tasksData.length}</span>
+                        </div>
+                        <div class="min-h-[84px] rounded-2xl border border-slate-200 bg-slate-50 px-3.5 py-3 flex items-center justify-between gap-3 shadow-sm">
+                            <div>
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.24em] report-text block">Total HM</span>
+                                <span class="mt-1 text-[11px] text-slate-500 report-text block">Somatório do período</span>
+                            </div>
+                            <span class="shrink-0 whitespace-nowrap text-slate-900 font-black text-[1.75rem] leading-none report-text">${totalHM > 0 ? `${formatDisplayHM(totalHM)} H` : '0 H'}</span>
+                        </div>
+                        <div class="min-h-[84px] rounded-2xl border border-slate-200 bg-white px-3.5 py-3 flex items-center justify-between gap-3 shadow-sm">
+                            <div>
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.24em] report-text block">Total combustível</span>
+                                <span class="mt-1 text-[11px] text-slate-500 report-text block">Consumo consolidado</span>
+                            </div>
+                            <span class="shrink-0 whitespace-nowrap text-slate-900 font-black text-[1.75rem] leading-none report-text">${totalFuel > 0 ? `${formatDisplayHM(totalFuel)} L` : '0 L'}</span>
+                        </div>
+                    </div>
+                </div>`;
+            if (!tasksData.length) {
+                container.innerHTML = `<div class="h-full flex items-center justify-center text-center text-slate-400 text-xs italic">Nenhuma atividade adicionada no formulário.</div>`;
+            } else {
+                let cardsHtml = '';
+                tasksData.forEach((item, index) => {
+                    const hmHours = calculateTaskHours(item.startHM, item.endHM);
+                    const hmDiff = hmHours > 0 ? formatDisplayHM(hmHours) : '-';
+                    cardsHtml += `
+                    <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden mb-3 last:mb-0 shadow-sm">
+                        <div class="flex items-start justify-between gap-4 px-4 sm:px-5 py-4 border-b border-slate-200 bg-slate-50/80">
+                            <div class="min-w-0 flex items-center gap-3">
+                                <div class="shrink-0 text-sm font-black tracking-[0.16em] text-slate-900 report-text whitespace-nowrap"># ${index + 1}</div>
+                                <div class="min-w-0">
+                                    <div class="flex flex-wrap items-center gap-x-2 gap-y-2">
+                                        <span class="text-sm sm:text-base font-black text-slate-900 report-text">${item.service || 'Serviço não informado'}</span>
+                                        <div class="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-slate-500 report-text">
+                                            <span class="rounded-full bg-white px-2.5 py-1 border border-slate-200">${item.location || '-'}</span>
+                                            <span class="rounded-full bg-white px-2.5 py-1 border border-slate-200">Ciclo ${item.cycle || '-'}</span>
+                                            <span class="rounded-full bg-slate-900 px-2.5 py-1 border border-slate-900 text-white shadow-sm">${item.requester || 'Solicitante não informado'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="report-activity-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-px bg-slate-200">
+                            <div class="bg-white px-4 py-2 h-full min-h-[70px] flex flex-col items-center justify-center text-center">
+                                <div class="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-400 report-text whitespace-nowrap">Horímetro início</div>
+                                <div class="mt-1 text-[13px] font-semibold text-slate-900 report-text whitespace-nowrap">${item.startHM || '-'}</div>
+                            </div>
+                            <div class="bg-white px-4 py-2 h-full min-h-[70px] flex flex-col items-center justify-center text-center">
+                                <div class="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-400 report-text whitespace-nowrap">Horímetro final</div>
+                                <div class="mt-1 text-[13px] font-semibold text-slate-900 report-text whitespace-nowrap">${item.endHM || '-'}</div>
+                            </div>
+                            <div class="bg-white px-4 py-2 h-full min-h-[70px] flex flex-col items-center justify-center text-center">
+                                <div class="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-400 report-text whitespace-nowrap">Horímetro total</div>
+                                <div class="mt-1 text-[13px] font-semibold text-slate-900 report-text whitespace-nowrap">${hmDiff}${hmDiff !== '-' ? ' H' : ''}</div>
+                            </div>
+                            <div class="bg-white px-4 py-2 h-full min-h-[70px] flex flex-col items-center justify-center text-center">
+                                <div class="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-400 report-text whitespace-nowrap">Implemento</div>
+                                <div class="mt-1 text-[13px] font-semibold text-slate-900 report-text whitespace-nowrap">${item.implement || 'Não informado'}</div>
+                            </div>
+                            <div class="bg-white px-4 py-2 h-full min-h-[70px] flex flex-col items-center justify-center text-center">
+                                <div class="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-400 report-text whitespace-nowrap">Combustível</div>
+                                <div class="mt-1 text-[13px] font-semibold text-slate-900 report-text whitespace-nowrap">${item.fuel ? `${item.fuel} L` : 'Não informado'}</div>
+                            </div>
+                        </div>
+                        <div class="px-4 sm:px-5 py-4 bg-white">
+                            <div class="text-[9px] font-bold uppercase tracking-[0.24em] text-slate-400 report-text">Observações</div>
+                            <div class="mt-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 report-text break-words">
+                                ${item.notes || 'Sem observações'}
+                            </div>
+                        </div>
+                    </div>`;
+                });
+                container.innerHTML = cardsHtml;
+            }
+            if (tasksData.length > 0) {
+                footer.style.display = 'none';
+                footer.innerHTML = ``;
             } else {
                 footer.style.display = 'none';
                 footer.innerHTML = ``;
@@ -1171,19 +1961,32 @@
         }
 
         function atualizarDashboardCustos() {
-            saveDashboardInputs();
             if (dashboardDataCache) {
                 renderDashboard(dashboardDataCache);
             }
         }
 
+        function atualizarDashboardDados() {
+            carregarDashboard({ showOverlay: false, showInlineProgress: true });
+        }
+
         function abrirDashboard() {
             const mainPage = document.getElementById('mainPage');
             const dashboardPage = document.getElementById('dashboardPage');
+            const dashboardAlreadyVisible = dashboardPage && !dashboardPage.classList.contains('hidden');
             if (mainPage) mainPage.classList.add('hidden');
             if (dashboardPage) dashboardPage.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            carregarDashboard();
+            if (dashboardAlreadyVisible && dashboardDataCache) {
+                return;
+            }
+            if (dashboardDataCache) {
+                setDashboardLoadingState(false);
+                renderDashboard(dashboardDataCache);
+            } else {
+                setDashboardLoadingState(true);
+                carregarDashboard({ showOverlay: true, showInlineProgress: false });
+            }
         }
 
         function fecharDashboard() {
@@ -1194,13 +1997,80 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        async function carregarDashboard() {
+        function setDashboardRefreshProgressState(isVisible, percent = 0) {
+            const wrap = document.getElementById('dashboardRefreshProgressWrap');
+            const value = document.getElementById('dashboardRefreshProgressValue');
+            const bar = document.getElementById('dashboardRefreshProgressBar');
+            if (!wrap || !value || !bar) return;
+
+            if (!isVisible) {
+                wrap.classList.add('hidden');
+                value.textContent = '0%';
+                bar.style.width = '0%';
+                return;
+            }
+
+            wrap.classList.remove('hidden');
+            const safePercent = Math.max(0, Math.min(100, Number(percent) || 0));
+            value.textContent = `${safePercent}%`;
+            bar.style.width = `${safePercent}%`;
+        }
+
+        function setDashboardRefreshButtonLoading(isLoading) {
+            const button = document.getElementById('dashboardRefreshBtn');
+            if (!button) return;
+            button.disabled = isLoading;
+            button.classList.toggle('opacity-60', isLoading);
+            button.classList.toggle('cursor-not-allowed', isLoading);
+        }
+
+        function startDashboardRefreshProgress() {
+            const token = ++dashboardRefreshProgressToken;
+            clearInterval(dashboardRefreshProgressTimer);
+            setDashboardRefreshButtonLoading(true);
+            setDashboardRefreshProgressState(true, 0);
+
+            dashboardRefreshProgressTimer = setInterval(() => {
+                if (token !== dashboardRefreshProgressToken) return;
+                const currentValue = Number(document.getElementById('dashboardRefreshProgressValue')?.textContent?.replace('%', '')) || 0;
+                if (currentValue >= 95) {
+                    setDashboardRefreshProgressState(true, 95);
+                    return;
+                }
+                const nextValue = Math.min(95, currentValue + Math.max(1, Math.ceil(Math.random() * 7)));
+                setDashboardRefreshProgressState(true, nextValue);
+            }, 120);
+        }
+
+        function finishDashboardRefreshProgress() {
+            const token = ++dashboardRefreshProgressToken;
+            clearInterval(dashboardRefreshProgressTimer);
+            dashboardRefreshProgressTimer = null;
+            const currentValue = Number(document.getElementById('dashboardRefreshProgressValue')?.textContent?.replace('%', '')) || 0;
+            setDashboardRefreshProgressState(true, Math.max(currentValue, 100));
+            setTimeout(() => {
+                if (token !== dashboardRefreshProgressToken) return;
+                setDashboardRefreshProgressState(false, 0);
+                setDashboardRefreshButtonLoading(false);
+            }, 350);
+        }
+
+        async function carregarDashboard(options = {}) {
+            const { showOverlay = true, showInlineProgress = false } = options;
             const status = document.getElementById('dashboardStatus');
             const updatedAt = document.getElementById('dashboardUpdatedAt');
             const errorBox = document.getElementById('dashboardError');
+            if (showOverlay) {
+                setDashboardLoadingState(true);
+            } else {
+                setDashboardLoadingState(false);
+            }
+            if (showInlineProgress) {
+                startDashboardRefreshProgress();
+            }
 
-            if (status) status.textContent = 'Carregando dados da planilha...';
-            if (updatedAt) updatedAt.textContent = 'Atualizando dashboard...';
+            if (status) status.textContent = showInlineProgress ? 'Atualizando dados da planilha...' : 'Carregando dados da planilha...';
+            if (updatedAt) updatedAt.textContent = showInlineProgress ? 'Atualização em andamento...' : 'Atualizando dashboard...';
             if (errorBox) {
                 errorBox.classList.add('hidden');
                 errorBox.textContent = '';
@@ -1217,6 +2087,9 @@
 
             window[callbackName] = (data) => {
                 cleanup();
+                if (showInlineProgress) {
+                    finishDashboardRefreshProgress();
+                }
                 renderDashboard(data);
             };
 
@@ -1225,6 +2098,15 @@
             script.onerror = () => {
                 cleanup();
                 console.error('Erro ao carregar dashboard via JSONP.');
+                if (showInlineProgress) {
+                    clearInterval(dashboardRefreshProgressTimer);
+                    dashboardRefreshProgressTimer = null;
+                    setDashboardRefreshProgressState(false, 0);
+                    setDashboardRefreshButtonLoading(false);
+                }
+                if (showOverlay) {
+                    setDashboardLoadingState(false);
+                }
                 if (status) status.textContent = 'Não foi possível carregar o dashboard.';
                 if (updatedAt) updatedAt.textContent = 'Falha na leitura dos dados.';
                 if (errorBox) {
@@ -1237,8 +2119,27 @@
             document.body.appendChild(script);
         }
 
+        setTimeout(() => {
+            if (!dashboardDataCache) {
+                carregarDashboard({ showOverlay: false, showInlineProgress: false });
+            }
+        }, 0);
+
+        function setDashboardLoadingState(isLoading) {
+            const dashboardPage = document.getElementById('dashboardPage');
+            const overlay = document.getElementById('dashboardLoadingOverlay');
+            document.body.classList.toggle('overflow-hidden', isLoading);
+            if (dashboardPage) {
+                dashboardPage.classList.toggle('pointer-events-none', isLoading);
+            }
+            if (overlay) {
+                overlay.classList.toggle('hidden', !isLoading);
+            }
+        }
+
         function renderDashboard(data) {
             dashboardDataCache = data;
+            setDashboardLoadingState(false);
             const allRecords = Array.isArray(data.allRecords) && data.allRecords.length
                 ? data.allRecords
                 : (Array.isArray(data.recentRows) ? data.recentRows : []);
@@ -1252,45 +2153,75 @@
             const totalCombustivel = document.getElementById('dashTotalCombustivel');
             const custoHora = document.getElementById('dashCustoHora');
             const custoTotal = document.getElementById('dashCustoTotal');
+            const operatorSource = document.getElementById('dashOperatorSource');
+            const operatorHourlyRate = document.getElementById('dashOperatorHourlyRate');
+            const dieselSource = document.getElementById('dashDieselSource');
             const updatedAt = document.getElementById('dashboardUpdatedAt');
             const status = document.getElementById('dashboardStatus');
             const rowsInfo = document.getElementById('dashRowsInfo');
-            const blocksRowsInfo = document.getElementById('dashBlocksRowsInfo');
+            const assistantSummary = document.getElementById('dashboardAssistantSummary');
+            const assistantNarrative = document.getElementById('dashboardAssistantNarrative');
 
             const totalHours = totals.totalHMValue;
             const totalFuel = totals.totalCombustivelValue;
-            const dieselPrice = parseDashboardNumber(document.getElementById('dashDieselPrice')?.value);
-            const operatorSalary = parseDashboardNumber(document.getElementById('dashOperatorSalary')?.value);
-            const fuelCost = totalFuel * dieselPrice;
-            const estimatedTotalCost = operatorSalary + fuelCost;
+            const fuelCost = totals.totalFuelCostValue;
+            const operatorCost = totals.totalOperatorCostValue || sumOperatorCosts(filteredRecords);
+            const estimatedTotalCost = operatorCost + fuelCost;
             const hourlyCost = totalHours > 0 ? (estimatedTotalCost / totalHours) : 0;
-            const operatorHourlyCost = totalHours > 0 ? (operatorSalary / totalHours) : 0;
-            const servicesHourlyCost = totalHours > 0 ? (fuelCost / totalHours) : 0;
-
+            const operatorHourlyRateValue = totalHours > 0 ? (operatorCost / totalHours) : 0;
             if (totalRegistros) totalRegistros.textContent = totals.totalRegistros;
             if (totalHM) totalHM.textContent = `${formatDisplayHM(totalHours)} H`;
             if (totalCombustivel) totalCombustivel.textContent = `${formatDisplayHM(totalFuel)} L`;
             if (custoHora) custoHora.textContent = hourlyCost > 0 ? formatCurrencyBR(hourlyCost) : '-';
             if (custoTotal) custoTotal.textContent = estimatedTotalCost > 0 ? formatCurrencyBR(estimatedTotalCost) : '-';
+            if (operatorSource) operatorSource.textContent = operatorCost > 0 ? formatCurrencyBR(operatorCost) : '-';
+            if (operatorHourlyRate) operatorHourlyRate.textContent = operatorHourlyRateValue > 0 ? formatCurrencyBR(operatorHourlyRateValue) : '-';
+            if (dieselSource) dieselSource.textContent = fuelCost > 0 ? formatCurrencyBR(fuelCost) : '-';
             if (updatedAt) updatedAt.textContent = `Atualizado em ${data.generatedAt || 'data não informada'}`;
             if (status) status.textContent = filteredRecords.length === allRecords.length ? 'Resumo geral carregado diretamente na página.' : 'Resumo filtrado conforme os critérios selecionados.';
 
-            renderDashboardBars('dashLocations', totals.byLocationHours || [], 'Nenhum bloco encontrado.', 'h');
+            const assistant = buildDashboardAssistant(filteredRecords, totals);
+            if (assistantSummary) {
+                assistantSummary.innerHTML = assistant.summaryCards.map(card => `
+                    <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+                        <div class="text-[10px] uppercase tracking-[0.18em] text-slate-300 font-bold">${escapeHtmlDashboard(card.label)}</div>
+                        <div class="mt-2 text-sm font-black text-white">${escapeHtmlDashboard(card.value)}</div>
+                        <div class="text-xs text-slate-300 mt-1">${escapeHtmlDashboard(card.note)}</div>
+                    </div>
+                `).join('');
+            }
+            if (assistantNarrative) {
+                assistantNarrative.innerHTML = assistant.narrative.length
+                    ? assistant.narrative.map(line => `<div class="rounded-lg bg-white/5 border border-white/10 px-3 py-2">${escapeHtmlDashboard(line)}</div>`).join('')
+                    : '<div class="rounded-lg bg-white/5 border border-white/10 px-3 py-2">Sem dados suficientes para gerar o resumo automático.</div>';
+            }
+
+            renderDashboardBars('dashLocations', totals.byLocationHours || [], 'Nenhum local encontrado.', 'h');
             renderDashboardBars('dashServices', totals.byServiceHours || [], 'Nenhum serviço encontrado.', 'h');
-            renderDashboardCostList('dashLocationsCost', totals.byLocationHours || [], hourlyCost, 'bloco');
-            renderDashboardCostList('dashServicesCost', totals.byServiceHours || [], hourlyCost, 'serviço');
-            renderDashboardBlocksTable(filteredRecords, operatorHourlyCost, servicesHourlyCost);
+            renderDashboardGroupedBars(
+                'dashCombinedChart',
+                Object.values(groupRecordsByField(filteredRecords, 'local')),
+                'Nenhum local encontrado.',
+                [
+                    { key: 'hours', label: 'Horas', unit: 'H', color: '#2563eb' },
+                    { key: 'fuel', label: 'Combustível', unit: 'L', color: '#f59e0b' },
+                    { key: 'operatorCost', label: 'Operador', unit: 'R$', color: '#059669' },
+                    { key: 'fuelCost', label: 'Diesel', unit: 'R$', color: '#f43f5e' }
+                ]
+            );
+            renderDashboardBlockCostTable('dashLocationsCostRows', Object.values(groupRecordsByField(filteredRecords, 'local')), 'Nenhum local encontrado.');
+            renderDashboardCostTable('dashServicesCostRows', Object.values(groupRecordsByField(filteredRecords, 'service')), 'Nenhum serviço encontrado.');
+            renderDashboardServiceHourlyRateTable('dashServiceHourlyRateRows', Object.values(groupRecordsByField(filteredRecords, 'service')), 'Nenhum serviço encontrado.');
 
             const rows = totals.recentRows || [];
             if (rowsInfo) rowsInfo.textContent = `${rows.length} registro(s) exibido(s) de ${allRecords.length} total`;
-            if (blocksRowsInfo) blocksRowsInfo.textContent = `${Object.keys(groupRecordsByLocation(filteredRecords)).length} bloco(s) no total`;
 
             const tbody = document.getElementById('dashRecentRows');
             if (tbody) {
                 if (!rows.length) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="10" class="p-4 text-center text-slate-500">Nenhum registro recente para exibir.</td>
+                            <td colspan="12" class="p-4 text-center text-slate-500">Nenhum registro recente para exibir.</td>
                         </tr>
                     `;
                 } else {
@@ -1302,11 +2233,13 @@
                                 <td class="p-3">${escapeHtmlDashboard(row.operador || '-')}</td>
                                 <td class="p-3">${escapeHtmlDashboard(row.trator || '-')}</td>
                                 <td class="p-3">${escapeHtmlDashboard(row.local || '-')}</td>
+                                <td class="p-3">${escapeHtmlDashboard(row.cycle || '-')}</td>
                                 <td class="p-3">${escapeHtmlDashboard(row.service || '-')}</td>
                                 <td class="p-3">${escapeHtmlDashboard(row.implemento || '-')}</td>
                                 <td class="p-3">${escapeHtmlDashboard(row.solicitante || '-')}</td>
                                 <td class="p-3 whitespace-nowrap">${escapeHtmlDashboard(hmText)}</td>
                                 <td class="p-3 whitespace-nowrap">${escapeHtmlDashboard(row.combustivel || '-')}</td>
+                                <td class="p-3 whitespace-nowrap">${escapeHtmlDashboard(row.dieselPrice || '-')}</td>
                                 <td class="p-3">${escapeHtmlDashboard(row.observacoes || '-')}</td>
                             </tr>
                         `;
@@ -1319,12 +2252,13 @@
 
         function applyDashboardFilters(records, filters = getDashboardFilters()) {
             return (records || []).filter(record => {
-                if (filters.location && record.local !== filters.location) return false;
-                if (filters.service && record.service !== filters.service) return false;
-                if (filters.implement && record.implemento !== filters.implement) return false;
-                if (filters.requester && record.solicitante !== filters.requester) return false;
-                if (filters.operator && record.operador !== filters.operator) return false;
-                if (filters.tractor && record.trator !== filters.tractor) return false;
+                if (!matchesDashboardMultiFilter(filters.location, record.local)) return false;
+                if (!matchesDashboardMultiFilter(filters.cycle, record.cycle)) return false;
+                if (!matchesDashboardMultiFilter(filters.service, record.service)) return false;
+                if (!matchesDashboardMultiFilter(filters.implement, record.implemento)) return false;
+                if (!matchesDashboardMultiFilter(filters.requester, record.solicitante)) return false;
+                if (!matchesDashboardMultiFilter(filters.operator, record.operador)) return false;
+                if (!matchesDashboardMultiFilter(filters.tractor, record.trator)) return false;
                 if (filters.startDate && (!record.dateIso || record.dateIso < filters.startDate)) return false;
                 if (filters.endDate && (!record.dateIso || record.dateIso > filters.endDate)) return false;
                 return true;
@@ -1336,6 +2270,8 @@
                 totalRegistros: 0,
                 totalHMValue: 0,
                 totalCombustivelValue: 0,
+                totalOperatorCostValue: 0,
+                totalFuelCostValue: 0,
                 byServiceHours: [],
                 byLocationHours: [],
                 recentRows: []
@@ -1348,6 +2284,8 @@
                 const hmHours = parseDashboardNumber(record.hmHours);
                 summary.totalHMValue += hmHours;
                 summary.totalCombustivelValue += parseDashboardNumber(record.combustivelValue);
+                summary.totalOperatorCostValue += parseDashboardNumber(record.operatorCostValue);
+                summary.totalFuelCostValue += calculateRecordFuelCost(record);
                 const serviceKey = record.service || 'Não informado';
                 const locationKey = record.local || 'Não informado';
                 serviceHours[serviceKey] = (serviceHours[serviceKey] || 0) + hmHours;
@@ -1360,54 +2298,147 @@
             return summary;
         }
 
-        function groupRecordsByLocation(records) {
+        function buildDashboardAssistant(records, totals) {
+            const groupedLocations = Object.values(groupRecordsByField(records, 'local'));
+            const groupedImplementos = Object.values(groupRecordsByField(records, 'implemento'));
+            const groupedServices = Object.values(groupRecordsByField(records, 'service'));
+
+            const pickHighest = (items, selector) => {
+                const filtered = (items || []).filter(item => (selector(item) || 0) > 0);
+                if (!filtered.length) return null;
+                return filtered.slice().sort((a, b) => selector(b) - selector(a))[0];
+            };
+
+            const pickLowest = (items, selector) => {
+                const filtered = (items || []).filter(item => (selector(item) || 0) > 0);
+                if (!filtered.length) return null;
+                return filtered.slice().sort((a, b) => selector(a) - selector(b))[0];
+            };
+
+            const locationCost = item => (item.operatorCost || 0) + (item.fuelCost || 0);
+            const localHighestCost = pickHighest(groupedLocations, locationCost);
+            const localLowestCost = pickLowest(groupedLocations, locationCost);
+            const localHighestHours = pickHighest(groupedLocations, item => item.hours || 0);
+            const localLowestHours = pickLowest(groupedLocations, item => item.hours || 0);
+            const localHighestFuel = pickHighest(groupedLocations, item => item.fuel || 0);
+            const implementHighestCost = pickHighest(groupedImplementos, locationCost);
+            const implementHighestHours = pickHighest(groupedImplementos, item => item.hours || 0);
+            const serviceHighestCost = pickHighest(groupedServices, locationCost);
+
+            const topHoursAvg = totals.totalHMValue > 0 ? (totals.totalHMValue / Math.max(totals.totalRegistros, 1)) : 0;
+            const totalEstimatedCost = totals.totalOperatorCostValue + totals.totalFuelCostValue;
+
+            const summaryCards = [
+                {
+                    label: 'Maior custo por local',
+                    value: localHighestCost ? localHighestCost.label : '-',
+                    note: localHighestCost ? `${formatCurrencyBR(locationCost(localHighestCost))}` : 'Sem valor suficiente.'
+                },
+                {
+                    label: 'Maior custo por implemento',
+                    value: implementHighestCost ? implementHighestCost.label : '-',
+                    note: implementHighestCost ? `${formatCurrencyBR(locationCost(implementHighestCost))}` : 'Sem valor suficiente.'
+                },
+                {
+                    label: 'Mais horas por local',
+                    value: localHighestHours ? localHighestHours.label : '-',
+                    note: localHighestHours ? `${formatDisplayHM(localHighestHours.hours || 0)} H` : 'Sem valor suficiente.'
+                },
+                {
+                    label: 'Menor custo por local',
+                    value: localLowestCost ? localLowestCost.label : '-',
+                    note: localLowestCost ? `${formatCurrencyBR(locationCost(localLowestCost))}` : 'Sem valor suficiente.'
+                },
+                {
+                    label: 'Menos horas por local',
+                    value: localLowestHours ? localLowestHours.label : '-',
+                    note: localLowestHours ? `${formatDisplayHM(localLowestHours.hours || 0)} H` : 'Sem valor suficiente.'
+                },
+                {
+                    label: 'Maior diesel por local',
+                    value: localHighestFuel ? localHighestFuel.label : '-',
+                    note: localHighestFuel ? `${formatDisplayHM(localHighestFuel.fuel || 0)} L` : 'Sem valor suficiente.'
+                }
+            ];
+
+            const narrative = [];
+            if (localHighestCost) {
+                narrative.push(`O local com maior custo no recorte atual foi ${localHighestCost.label}, com ${formatCurrencyBR(locationCost(localHighestCost))}.`);
+            }
+            if (implementHighestCost) {
+                narrative.push(`O implemento com maior custo foi ${implementHighestCost.label}, somando ${formatCurrencyBR(locationCost(implementHighestCost))}.`);
+            }
+            if (localHighestHours) {
+                narrative.push(`O local com mais horas trabalhadas foi ${localHighestHours.label}, com ${formatDisplayHM(localHighestHours.hours || 0)} H.`);
+            }
+            if (localLowestCost) {
+                narrative.push(`O local com menor custo foi ${localLowestCost.label}, com ${formatCurrencyBR(locationCost(localLowestCost))}.`);
+            }
+            if (localLowestHours) {
+                narrative.push(`O local com menos horas trabalhadas foi ${localLowestHours.label}, com ${formatDisplayHM(localLowestHours.hours || 0)} H.`);
+            }
+            if (localHighestFuel) {
+                narrative.push(`O maior consumo de combustível ficou em ${localHighestFuel.label}, com ${formatDisplayHM(localHighestFuel.fuel || 0)} L.`);
+            }
+            if (serviceHighestCost) {
+                narrative.push(`Entre os serviços, ${serviceHighestCost.label} foi o mais caro, com ${formatCurrencyBR(locationCost(serviceHighestCost))}.`);
+            }
+            if (totals.totalRegistros > 0) {
+                narrative.push(`O recorte atual reúne ${totals.totalRegistros} registro(s), ${formatDisplayHM(totals.totalHMValue)} H, ${formatDisplayHM(totals.totalCombustivelValue)} L e custo estimado total de ${formatCurrencyBR(totalEstimatedCost)}.`);
+            }
+            if (topHoursAvg > 0) {
+                narrative.push(`A média de horas por registro ficou em ${formatDisplayHM(topHoursAvg)} H, útil para comparar intensidade de trabalho no período.`);
+            }
+
+            return { summaryCards, narrative };
+        }
+
+        function calculateRecordFuelCost(record) {
+            return parseDashboardNumber(record.fuelCostValue);
+        }
+
+        function calculateRecordOperatorCost(record) {
+            return parseDashboardNumber(record.operatorCostValue);
+        }
+
+        function sumOperatorCosts(records) {
+            let total = 0;
+            (records || []).forEach(record => {
+                total += calculateRecordOperatorCost(record);
+            });
+            return total;
+        }
+
+        function groupRecordsByField(records, fieldName) {
             const grouped = {};
 
             (records || []).forEach(record => {
-                const key = record.local || 'Não informado';
+                const key = record[fieldName] || 'Não informado';
                 if (!grouped[key]) {
                     grouped[key] = {
                         label: key,
+                        cycles: [],
+                        cycleSet: new Set(),
                         hours: 0,
-                        fuel: 0
+                        fuel: 0,
+                        operatorCost: 0,
+                        fuelCost: 0
                     };
                 }
+                const cycle = record.cycle || '';
+                if (cycle) grouped[key].cycleSet.add(cycle);
                 grouped[key].hours += parseDashboardNumber(record.hmHours);
                 grouped[key].fuel += parseDashboardNumber(record.combustivelValue);
+                grouped[key].operatorCost += parseDashboardNumber(record.operatorCostValue);
+                grouped[key].fuelCost += parseDashboardNumber(record.fuelCostValue);
+            });
+
+            Object.values(grouped).forEach(item => {
+                item.cycles = Array.from(item.cycleSet).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+                delete item.cycleSet;
             });
 
             return grouped;
-        }
-
-        function renderDashboardBlocksTable(records, operatorHourlyCost, servicesHourlyCost) {
-            const tbody = document.getElementById('dashBlocksRows');
-            if (!tbody) return;
-
-            const grouped = groupRecordsByLocation(records);
-            const rows = Object.values(grouped).sort((a, b) => b.hours - a.hours);
-
-            if (!rows.length) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="p-4 text-center text-slate-500">Nenhum bloco encontrado.</td>
-                    </tr>
-                `;
-                return;
-            }
-
-            tbody.innerHTML = rows.map(row => {
-                const costOperator = row.hours * operatorHourlyCost;
-                const costServices = row.hours * servicesHourlyCost;
-                return `
-                    <tr class="align-top">
-                        <td class="p-3 font-bold text-slate-700">${escapeHtmlDashboard(row.label)}</td>
-                        <td class="p-3 whitespace-nowrap">${formatDisplayHM(row.hours)} H</td>
-                        <td class="p-3 whitespace-nowrap">${formatDisplayHM(row.fuel)} L</td>
-                        <td class="p-3 whitespace-nowrap">${costOperator > 0 ? formatCurrencyBR(costOperator) : '-'}</td>
-                        <td class="p-3 whitespace-nowrap">${costServices > 0 ? formatCurrencyBR(costServices) : '-'}</td>
-                    </tr>
-                `;
-            }).join('');
         }
 
         function renderDashboardBars(containerId, items, emptyMessage, unitLabel = '') {
@@ -1437,6 +2468,88 @@
             }).join('');
         }
 
+        function renderDashboardGroupedBars(containerId, items, emptyMessage, seriesList) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            if (!Array.isArray(items) || items.length === 0) {
+                container.innerHTML = `<div class="text-sm text-slate-500 bg-slate-50 border border-dashed border-slate-200 rounded-xl p-4">${escapeHtmlDashboard(emptyMessage)}</div>`;
+                return;
+            }
+
+            const sorted = items
+                .slice()
+                .sort((a, b) => {
+                    const peakA = Math.max(...(seriesList || []).map(series => a[series.key] || 0));
+                    const peakB = Math.max(...(seriesList || []).map(series => b[series.key] || 0));
+                    return peakB - peakA;
+                })
+                ;
+
+            const pageSize = 4;
+            const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+            if (dashboardCombinedChartPage > totalPages - 1) {
+                dashboardCombinedChartPage = totalPages - 1;
+            }
+            const currentPage = dashboardCombinedChartPage + 1;
+            const startIndex = dashboardCombinedChartPage * pageSize;
+            const pageItems = sorted.slice(startIndex, startIndex + pageSize);
+            const maxValue = Math.max(
+                ...pageItems.map(item => Math.max(...(seriesList || []).map(series => item[series.key] || 0))),
+                1
+            );
+
+            container.innerHTML = `
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="text-xs text-slate-500 font-bold">Página ${currentPage}/${totalPages}</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" ${dashboardCombinedChartPage <= 0 ? 'disabled' : ''} onclick="atualizarDashboardCombinedChartPage(-1)" class="px-3 py-2 rounded-lg border border-slate-200 text-xs font-bold transition-colors ${dashboardCombinedChartPage <= 0 ? 'bg-slate-50 text-slate-300 cursor-not-allowed' : 'bg-white hover:bg-slate-100 text-slate-700'}">Anterior</button>
+                            <button type="button" ${dashboardCombinedChartPage >= totalPages - 1 ? 'disabled' : ''} onclick="atualizarDashboardCombinedChartPage(1)" class="px-3 py-2 rounded-lg border border-slate-200 text-xs font-bold transition-colors ${dashboardCombinedChartPage >= totalPages - 1 ? 'bg-slate-50 text-slate-300 cursor-not-allowed' : 'bg-white hover:bg-slate-100 text-slate-700'}">Próximo</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        ${pageItems.map(item => {
+                const seriesValues = (seriesList || []).map(series => {
+                    const value = item[series.key] || 0;
+                    const width = Math.max(7, Math.round((value / maxValue) * 100));
+                    const display = value > 0
+                        ? (series.unit === 'R$' ? formatCurrencyBR(value) : `${formatDisplayHM(value)} ${series.unit}`.trim())
+                        : '-';
+                    return { series, value, width, display };
+                });
+                return `
+                            <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                                <div class="flex items-center justify-between gap-3 mb-4">
+                                    <div class="text-sm font-black text-slate-800">${escapeHtmlDashboard(item.label || 'Sem nome')}</div>
+                                    <span class="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Resumo</span>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    ${seriesValues.map(({ series, width, display }) => `
+                                        <div class="rounded-xl border border-slate-100 bg-slate-50 p-3">
+                                            <div class="flex items-center justify-between gap-2 mb-2">
+                                                <div class="flex items-center gap-2 min-w-0">
+                                                    <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color:${series.color};"></span>
+                                                    <span class="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 truncate">${escapeHtmlDashboard(series.label || '')}</span>
+                                                </div>
+                                                <div class="text-xs font-black text-slate-800 tabular-nums">${escapeHtmlDashboard(display)}</div>
+                                            </div>
+                                            <div class="h-2.5 rounded-full bg-white overflow-hidden">
+                                                <div class="h-full rounded-full" style="width:${width}%; background-color:${series.color};"></div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                `;
+            }).join('')}
+                    </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         function toSortedHoursList(map, limit) {
             return Object.keys(map)
                 .map(label => ({ label: label, hours: map[label] }))
@@ -1444,28 +2557,110 @@
                 .slice(0, limit);
         }
 
-        function renderDashboardCostList(containerId, items, hourlyCost, itemLabel) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
+        function renderDashboardBlockCostTable(tbodyId, items, emptyMessage) {
+            const tbody = document.getElementById(tbodyId);
+            if (!tbody) return;
 
             if (!Array.isArray(items) || items.length === 0) {
-                container.innerHTML = `<div class="text-sm text-slate-500 bg-slate-50 border border-dashed border-slate-200 rounded-xl p-4">Nenhum ${escapeHtmlDashboard(itemLabel)} encontrado.</div>`;
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="p-4 text-center text-slate-500">${escapeHtmlDashboard(emptyMessage)}</td>
+                    </tr>
+                `;
                 return;
             }
 
-            container.innerHTML = items.map(item => {
-                const hours = item.hours || item.count || 0;
-                const estimatedCost = hours > 0 ? (hours * hourlyCost) : 0;
-                return `
-                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                        <div class="flex items-center justify-between gap-3">
-                            <span class="text-sm font-bold text-slate-700">${escapeHtmlDashboard(item.label || 'Sem nome')}</span>
-                            <span class="text-xs font-bold text-slate-500">${hours > 0 ? `${formatDisplayHM(hours)} H` : '-'}</span>
-                        </div>
-                        <div class="mt-1 text-xs text-slate-500">Custo estimado: <span class="font-bold text-slate-700">${estimatedCost > 0 ? formatCurrencyBR(estimatedCost) : '-'}</span></div>
-                    </div>
+            tbody.innerHTML = items
+                .slice()
+                .sort((a, b) => (b.hours || 0) - (a.hours || 0))
+                .map(item => {
+                    const hours = item.hours || item.count || 0;
+                    const fuel = item.fuel || 0;
+                    const operatorCost = item.operatorCost || 0;
+                    const fuelCost = item.fuelCost || 0;
+                    const estimatedCost = operatorCost + fuelCost;
+                    const cycleText = Array.isArray(item.cycles) && item.cycles.length ? item.cycles.join(', ') : '-';
+                    return `
+                        <tr class="align-top">
+                            <td class="p-3 font-bold text-slate-700">${escapeHtmlDashboard(item.label || 'Sem nome')}</td>
+                            <td class="p-3">${escapeHtmlDashboard(cycleText)}</td>
+                            <td class="p-3 whitespace-nowrap">${hours > 0 ? `${formatDisplayHM(hours)} H` : '-'}</td>
+                            <td class="p-3 whitespace-nowrap">${fuel > 0 ? `${formatDisplayHM(fuel)} L` : '-'}</td>
+                            <td class="p-3 whitespace-nowrap">${operatorCost > 0 ? formatCurrencyBR(operatorCost) : '-'}</td>
+                            <td class="p-3 whitespace-nowrap">${fuelCost > 0 ? formatCurrencyBR(fuelCost) : '-'}</td>
+                            <td class="p-3 whitespace-nowrap">${estimatedCost > 0 ? formatCurrencyBR(estimatedCost) : '-'}</td>
+                        </tr>
+                    `;
+                }).join('');
+        }
+
+        function renderDashboardCostTable(tbodyId, items, emptyMessage) {
+            const tbody = document.getElementById(tbodyId);
+            if (!tbody) return;
+
+            if (!Array.isArray(items) || items.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="p-4 text-center text-slate-500">${escapeHtmlDashboard(emptyMessage)}</td>
+                    </tr>
                 `;
-            }).join('');
+                return;
+            }
+
+            tbody.innerHTML = items
+                .slice()
+                .sort((a, b) => {
+                    const costA = (a.operatorCost || 0) + (a.fuelCost || 0);
+                    const costB = (b.operatorCost || 0) + (b.fuelCost || 0);
+                    if (costB !== costA) return costB - costA;
+                    return (b.hours || 0) - (a.hours || 0);
+                })
+                .map(item => {
+                    const hours = item.hours || item.count || 0;
+                    const fuel = item.fuel || 0;
+                    const operatorCost = item.operatorCost || 0;
+                    const fuelCost = item.fuelCost || 0;
+                    const estimatedCost = operatorCost + fuelCost;
+                    return `
+                        <tr class="align-top">
+                            <td class="p-3 font-bold text-slate-700">${escapeHtmlDashboard(item.label || 'Sem nome')}</td>
+                            <td class="p-3 whitespace-nowrap">${hours > 0 ? `${formatDisplayHM(hours)} H` : '-'}</td>
+                            <td class="p-3 whitespace-nowrap">${fuel > 0 ? `${formatDisplayHM(fuel)} L` : '-'}</td>
+                            <td class="p-3 whitespace-nowrap">${operatorCost > 0 ? formatCurrencyBR(operatorCost) : '-'}</td>
+                            <td class="p-3 whitespace-nowrap">${fuelCost > 0 ? formatCurrencyBR(fuelCost) : '-'}</td>
+                            <td class="p-3 whitespace-nowrap">${estimatedCost > 0 ? formatCurrencyBR(estimatedCost) : '-'}</td>
+                        </tr>
+                    `;
+                }).join('');
+        }
+
+        function renderDashboardServiceHourlyRateTable(tbodyId, items, emptyMessage) {
+            const tbody = document.getElementById(tbodyId);
+            if (!tbody) return;
+
+            if (!Array.isArray(items) || items.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="2" class="p-4 text-center text-slate-500">${escapeHtmlDashboard(emptyMessage)}</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = items
+                .slice()
+                .sort((a, b) => (a.label || '').localeCompare(b.label || '', 'pt-BR'))
+                .map(item => {
+                    const hours = item.hours || item.count || 0;
+                    const estimatedCost = (item.operatorCost || 0) + (item.fuelCost || 0);
+                    const hourlyRate = hours > 0 ? (estimatedCost / hours) : 0;
+                    return `
+                        <tr class="align-top">
+                            <td class="p-3 font-bold text-slate-700">${escapeHtmlDashboard(item.label || 'Sem nome')}</td>
+                            <td class="p-3 whitespace-nowrap">${hourlyRate > 0 ? formatCurrencyBR(hourlyRate) : '-'}</td>
+                        </tr>
+                    `;
+                }).join('');
         }
 
         function escapeHtmlDashboard(value) {
@@ -1554,32 +2749,109 @@
                 lucide.createIcons();
 
                 const element = document.getElementById('report-card');
+                if (!element) {
+                    throw new Error('Não foi possível localizar o relatório para exportação.');
+                }
+                const exportWidth = 780;
+                const exportIframe = document.createElement('iframe');
+                exportIframe.setAttribute('aria-hidden', 'true');
+                exportIframe.tabIndex = -1;
+                exportIframe.style.position = 'fixed';
+                exportIframe.style.left = '0';
+                exportIframe.style.top = '0';
+                exportIframe.style.width = `${exportWidth}px`;
+                exportIframe.style.height = '1px';
+                exportIframe.style.border = '0';
+                exportIframe.style.opacity = '0';
+                exportIframe.style.pointerEvents = 'none';
+                exportIframe.style.zIndex = '-1';
+                exportIframe.style.overflow = 'hidden';
+                document.body.appendChild(exportIframe);
+
+                const iframeDoc = exportIframe.contentDocument;
+                if (!iframeDoc) {
+                    exportIframe.remove();
+                    throw new Error('Não foi possível preparar a área de exportação.');
+                }
+
+                iframeDoc.open();
+                iframeDoc.write('<!doctype html><html><head><meta charset="utf-8"></head><body></body></html>');
+                iframeDoc.close();
+
+                iframeDoc.documentElement.style.width = `${exportWidth}px`;
+                iframeDoc.documentElement.style.margin = '0';
+                iframeDoc.documentElement.style.padding = '0';
+                iframeDoc.body.style.margin = '0';
+                iframeDoc.body.style.padding = '0';
+                iframeDoc.body.style.width = `${exportWidth}px`;
+                iframeDoc.body.style.background = '#ffffff';
+                iframeDoc.body.style.overflow = 'visible';
+
+                document.head.querySelectorAll('style, link[rel="stylesheet"]').forEach((node) => {
+                    iframeDoc.head.appendChild(node.cloneNode(true));
+                });
+
+                const exportClone = element.cloneNode(true);
+                exportClone.style.width = `${exportWidth}px`;
+                exportClone.style.maxWidth = `${exportWidth}px`;
+                exportClone.style.minWidth = `${exportWidth}px`;
+                exportClone.style.flex = 'none';
+                exportClone.style.margin = '0';
+                exportClone.style.boxShadow = 'none';
+                exportClone.style.borderRadius = '0';
+                exportClone.style.border = 'none';
+                exportClone.classList.add('report-export-desktop');
+
+                const exportHeaderGrid = exportClone.querySelector('.report-header-grid');
+                if (exportHeaderGrid) {
+                    exportHeaderGrid.style.display = 'grid';
+                    exportHeaderGrid.style.gridTemplateColumns = 'repeat(2, minmax(0, 1fr))';
+                }
+
+                const exportKpiGrid = exportClone.querySelector('.report-kpi-grid');
+                if (exportKpiGrid) {
+                    exportKpiGrid.style.display = 'grid';
+                    exportKpiGrid.style.gridTemplateColumns = 'repeat(3, minmax(0, 1fr))';
+                }
+
+                const exportActivityGrid = exportClone.querySelector('.report-activity-grid');
+                if (exportActivityGrid) {
+                    exportActivityGrid.style.display = 'grid';
+                    exportActivityGrid.style.gridTemplateColumns = 'repeat(5, minmax(0, 1fr))';
+                }
+
+                const exportContent = exportClone.querySelector('#reportContent');
+                if (exportContent) {
+                    exportContent.style.height = 'auto';
+                    exportContent.style.overflow = 'visible';
+                    exportContent.style.maxHeight = 'none';
+                }
+
+                iframeDoc.body.appendChild(exportClone);
+
+                if (iframeDoc.fonts?.ready) {
+                    await iframeDoc.fonts.ready;
+                }
+                await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
                 const options = {
-                    scale: 5,
-                    useCORS: true, 
-                    allowTaint: true,
-                    scrollY: -window.scrollY,
-                    backgroundColor: '#ffffff', 
-                    onclone: (doc) => {
-                        const el = doc.getElementById('report-card');
-                        const content = doc.getElementById('reportContent');
-                        if (el) { 
-                            el.style.width = '450px'; 
-                            el.style.maxWidth = '450px';
-                            el.style.margin = '0'; 
-                            el.style.boxShadow = 'none';
-                            el.style.borderRadius = '0';
-                            el.style.border = 'none';
-                        }
-                        if (content) { 
-                            content.style.height = 'auto'; 
-                            content.style.overflow = 'visible'; 
-                            content.style.maxHeight = 'none';
-                        }
-                    }
+                    pixelRatio: 4,
+                    cacheBust: true,
+                    backgroundColor: '#ffffff',
+                    skipAutoScale: false
                 };
 
-                const canvas = await html2canvas(element, options);
+                let blob = null;
+                try {
+                    blob = await htmlToImage.toBlob(exportClone, options);
+                } finally {
+                    if (exportIframe && exportIframe.parentNode) {
+                        exportIframe.parentNode.removeChild(exportIframe);
+                    }
+                }
+                if (!blob) {
+                    throw new Error('Não foi possível gerar a imagem do relatório.');
+                }
                 
                 let dateStr = 'Data_Indefinida';
                 let dateStrFormatada = 'Data_Indefinida';
@@ -1612,32 +2884,30 @@
                 const textoWhatsApp = `*Relatório Operacional - SPG Oásis*\n\n*Operador:* ${operador}\n*Data:* ${dateStrFormatada} - SE ${weekNumber}\n*Serviços Realizados:* ${tasksData.length}\n*Total de Horas:* ${hmText}\n*Total de Combustível:* ${fuelText}`;
 
                 // 3. COMPARTILHAR DIRETAMENTE PARA O WHATSAPP NATIVO DO CELULAR
-                canvas.toBlob(async (blob) => {
-                    const file = new File([blob], filename, { type: 'image/png' });
-                    
-                    // Verifica se o navegador do celular suporta compartilhamento de arquivos
-                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                        try {
-                            await navigator.share({
-                                title: 'Relatório SPG Oásis',
-                                text: textoWhatsApp,
-                                files: [file]
-                            });
-                        } catch (err) {
-                            console.log("Compartilhamento nativo cancelado pelo usuário.");
-                        }
-                    } else {
-                        // Se for no Computador/Navegador antigo, faz o download convencional
-                        const url = URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.download = filename;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        URL.revokeObjectURL(url);
+                const file = new File([blob], filename, { type: 'image/png' });
+                
+                // Verifica se o navegador do celular suporta compartilhamento de arquivos
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            title: 'Relatório SPG Oásis',
+                            text: textoWhatsApp,
+                            files: [file]
+                        });
+                    } catch (err) {
+                        console.log("Compartilhamento nativo cancelado pelo usuário.");
                     }
-                }, 'image/png');
+                } else {
+                    // Se for no Computador/Navegador antigo, faz o download convencional
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                }
 
             } catch (error) {
                 console.error("Erro geral:", error);
