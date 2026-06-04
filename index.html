@@ -594,7 +594,7 @@
                             <p class="text-xs text-slate-500 mb-3">Resume o custo acumulado de cada local, considerando horas, salário do operador e diesel informado por atividade.</p>
                             <button type="button" id="dashLocationsCostToggleBtn" onclick="toggleDashboardTable('dashLocationsCostTableWrap', 'dashLocationsCostToggleBtn')" class="mb-3 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors flex items-center gap-2">
                                 <i data-lucide="chevrons-down-up" class="w-4 h-4"></i>
-                                <span>Abrir tabela rolante</span>
+                                <span>Abrir Tabela</span>
                             </button>
                             <div id="dashLocationsCostTableWrap" class="hidden overflow-x-auto max-h-[420px] overflow-y-auto border border-slate-100 rounded-xl">
                                 <table class="w-full min-w-[1200px] text-left text-xs">
@@ -623,7 +623,7 @@
                             <p class="text-xs text-slate-500 mb-3">Mostra o custo estimado de cada serviço somando horas, salário do operador e valor do diesel registrado.</p>
                             <button type="button" id="dashServicesCostToggleBtn" onclick="toggleDashboardTable('dashServicesCostTableWrap', 'dashServicesCostToggleBtn')" class="mb-3 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors flex items-center gap-2">
                                 <i data-lucide="chevrons-down-up" class="w-4 h-4"></i>
-                                <span>Abrir tabela rolante</span>
+                                <span>Abrir Tabela</span>
                             </button>
                             <div id="dashServicesCostTableWrap" class="hidden overflow-x-auto max-h-[420px] overflow-y-auto border border-slate-100 rounded-xl">
                                 <table class="w-full min-w-[1100px] text-left text-xs">
@@ -647,7 +647,7 @@
                         <p class="text-xs text-slate-500 -mt-1 mb-3">Use esta tabela para saber quanto custa 1 hora de cada serviço, como concha ou transporte de material.</p>
                         <button type="button" id="dashServiceHourlyRateToggleBtn" onclick="toggleDashboardTable('dashServiceHourlyRateTableWrap', 'dashServiceHourlyRateToggleBtn')" class="mb-3 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors flex items-center gap-2">
                             <i data-lucide="chevrons-down-up" class="w-4 h-4"></i>
-                            <span>Abrir tabela rolante</span>
+                            <span>Abrir Tabela</span>
                         </button>
                         <div id="dashServiceHourlyRateTableWrap" class="hidden overflow-x-auto max-h-[420px] overflow-y-auto border border-slate-100 rounded-xl">
                             <table class="w-full min-w-[700px] text-left text-xs">
@@ -673,7 +673,7 @@
                     </div>
                     <button type="button" id="dashRecentToggleBtn" onclick="toggleDashboardTable('dashRecentTableWrap', 'dashRecentToggleBtn')" class="mb-3 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors flex items-center gap-2">
                         <i data-lucide="chevrons-down-up" class="w-4 h-4"></i>
-                        <span>Abrir tabela rolante</span>
+                        <span>Abrir Tabela</span>
                     </button>
                     <div id="dashRecentTableWrap" class="hidden overflow-x-auto max-h-[420px] overflow-y-auto border border-slate-100 rounded-xl">
                         <table class="w-full min-w-[1200px] text-left text-xs">
@@ -1485,7 +1485,7 @@
                 button.innerHTML = '<i data-lucide="chevrons-up-down" class="w-4 h-4"></i><span>Ocultar tabela</span>';
             } else {
                 wrap.classList.add('hidden');
-                button.innerHTML = '<i data-lucide="chevrons-down-up" class="w-4 h-4"></i><span>Abrir tabela rolante</span>';
+                button.innerHTML = '<i data-lucide="chevrons-down-up" class="w-4 h-4"></i><span>Abrir Tabela</span>';
             }
             lucide.createIcons();
         }
