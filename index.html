@@ -584,6 +584,23 @@
                     <div id="dashCombinedChart"></div>
                 </div>
 
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm mb-4">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                            <h4 class="text-sm font-black text-slate-800">Horas e custo estimado por data</h4>
+                            <p class="text-xs text-slate-500 mt-1">Linha azul para horas trabalhadas e linha verde para custo estimado total, ambas organizadas por data do recorte atual.</p>
+                        </div>
+                        <button type="button" id="dashDailyLineLabelsBtn" onclick="toggleDashboardDailyLineLabels()" class="self-start rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100">
+                            <span id="dashDailyLineLabelsBtnText">Mostrar Rótulos</span>
+                        </button>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-4 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 my-4">
+                        <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>Horas trabalhadas</span>
+                        <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>Custo estimado total</span>
+                    </div>
+                    <div id="dashDailyLineChart"></div>
+                </div>
+
                 <div class="space-y-4 mb-4">
                     <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
                         <h4 class="text-sm font-black text-slate-800 mb-3">Locais com mais horas trabalhadas</h4>
@@ -717,6 +734,7 @@
         let editingIndex = -1;
         let dashboardDataCache = null;
         let dashboardCombinedChartPage = 0;
+        let dashboardDailyLineLabelsVisible = false;
         let dashboardFilterOpenId = '';
         let dashboardRefreshProgressTimer = null;
         let dashboardRefreshProgressToken = 0;
@@ -2201,6 +2219,8 @@
 
             renderDashboardBars('dashLocations', totals.byLocationHours || [], 'Nenhum local encontrado.', 'h');
             renderDashboardBars('dashServices', totals.byServiceHours || [], 'Nenhum serviço encontrado.', 'h');
+            renderDashboardDateLineChart('dashDailyLineChart', filteredRecords, 'Nenhuma data válida encontrada no recorte atual.');
+            syncDashboardDailyLineLabelsButton();
             renderDashboardGroupedBars(
                 'dashCombinedChart',
                 Object.values(groupRecordsByField(filteredRecords, 'local')),
@@ -2241,7 +2261,7 @@
                                 <td class="p-3">${escapeHtmlDashboard(row.implemento || '-')}</td>
                                 <td class="p-3">${escapeHtmlDashboard(row.solicitante || '-')}</td>
                                 <td class="p-3 whitespace-nowrap">${escapeHtmlDashboard(hmText)}</td>
-                                <td class="p-3 whitespace-nowrap">${escapeHtmlDashboard(row.combustivel || '-')}</td>
+                                <td class="p-3 whitespace-nowrap text-center">${row.combustivel ? `${escapeHtmlDashboard(row.combustivel)} litros` : '-'}</td>
                                 <td class="p-3 whitespace-nowrap">${escapeHtmlDashboard(row.dieselPrice || '-')}</td>
                                 <td class="p-3">${escapeHtmlDashboard(row.observacoes || '-')}</td>
                             </tr>
@@ -2471,6 +2491,211 @@
             }).join('');
         }
 
+        function syncDashboardDailyLineLabelsButton() {
+            const buttonText = document.getElementById('dashDailyLineLabelsBtnText');
+            if (buttonText) {
+                buttonText.textContent = dashboardDailyLineLabelsVisible ? 'Ocultar Rótulos' : 'Mostrar Rótulos';
+            }
+        }
+
+        function toggleDashboardDailyLineLabels() {
+            dashboardDailyLineLabelsVisible = !dashboardDailyLineLabelsVisible;
+            syncDashboardDailyLineLabelsButton();
+            if (dashboardDataCache) {
+                renderDashboard(dashboardDataCache);
+            }
+        }
+
+        function groupDashboardRecordsByDate(records) {
+            const grouped = {};
+
+            (records || []).forEach(record => {
+                const dateIso = typeof record.dateIso === 'string' ? record.dateIso.trim() : '';
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(dateIso)) return;
+
+                if (!grouped[dateIso]) {
+                    grouped[dateIso] = {
+                        dateIso,
+                        label: formatDashboardDateBr(dateIso),
+                        hours: 0,
+                        estimatedCost: 0
+                    };
+                }
+
+                grouped[dateIso].hours += parseDashboardNumber(record.hmHours);
+                grouped[dateIso].estimatedCost += parseDashboardNumber(record.operatorCostValue) + parseDashboardNumber(record.fuelCostValue);
+            });
+
+            return Object.values(grouped).sort((a, b) => a.dateIso.localeCompare(b.dateIso));
+        }
+
+        function renderDashboardDateLineChart(containerId, records, emptyMessage) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const items = groupDashboardRecordsByDate(records);
+            if (!items.length) {
+                container.innerHTML = `<div class="text-sm text-slate-500 bg-slate-50 border border-dashed border-slate-200 rounded-xl p-4">${escapeHtmlDashboard(emptyMessage)}</div>`;
+                return;
+            }
+
+            const width = 980;
+            const height = 320;
+            const padding = { top: 28, right: 92, bottom: 72, left: 72 };
+            const innerWidth = width - padding.left - padding.right;
+            const innerHeight = height - padding.top - padding.bottom;
+            const hoursMax = Math.max(...items.map(item => item.hours || 0), 1);
+            const costMax = Math.max(...items.map(item => item.estimatedCost || 0), 1);
+            const xStep = items.length > 1 ? innerWidth / (items.length - 1) : 0;
+            const hoursY = value => padding.top + innerHeight - ((value || 0) / hoursMax) * innerHeight;
+            const costY = value => padding.top + innerHeight - ((value || 0) / costMax) * innerHeight;
+            const xForIndex = index => padding.left + (items.length > 1 ? index * xStep : innerWidth / 2);
+            const hoursPoints = items.map((item, index) => `${xForIndex(index)},${hoursY(item.hours || 0)}`).join(' ');
+            const costPoints = items.map((item, index) => `${xForIndex(index)},${costY(item.estimatedCost || 0)}`).join(' ');
+            const gridTicks = 4;
+
+            const gridLines = Array.from({ length: gridTicks + 1 }, (_, index) => {
+                const ratio = index / gridTicks;
+                const y = padding.top + innerHeight - ratio * innerHeight;
+                const hoursValue = hoursMax * ratio;
+                const costValue = costMax * ratio;
+                return `
+                    <line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" stroke="#e2e8f0" stroke-width="1" />
+                    <text x="${padding.left - 10}" y="${y + 4}" text-anchor="end" class="fill-slate-400" style="font-size:10px;font-weight:700;">
+                        ${escapeHtmlDashboard(formatDisplayHM(hoursValue))}
+                    </text>
+                    <text x="${width - padding.right + 10}" y="${y + 4}" text-anchor="start" class="fill-slate-400" style="font-size:10px;font-weight:700;">
+                        ${escapeHtmlDashboard(formatCurrencyBR(costValue))}
+                    </text>
+                `;
+            }).join('');
+
+            const maxXAxisLabels = 8;
+            const xAxisLabelIndexSet = new Set();
+            if (items.length <= maxXAxisLabels) {
+                items.forEach((_, index) => xAxisLabelIndexSet.add(index));
+            } else {
+                const step = (items.length - 1) / (maxXAxisLabels - 1);
+                for (let i = 0; i < maxXAxisLabels; i += 1) {
+                    xAxisLabelIndexSet.add(Math.round(i * step));
+                }
+                xAxisLabelIndexSet.add(0);
+                xAxisLabelIndexSet.add(items.length - 1);
+            }
+
+            const xAxisLabelItems = items
+                .map((item, index) => ({ item, index }))
+                .filter(({ index }) => xAxisLabelIndexSet.has(index));
+
+            const xAxisLabels = xAxisLabelItems.map(({ item, index }, labelIndex) => {
+                const x = xForIndex(index);
+                return `
+                    <text x="${x}" y="${height - 14}" text-anchor="middle" class="fill-slate-500" style="font-size:10px;font-weight:700;">
+                        ${escapeHtmlDashboard(item.label)}
+                    </text>
+                `;
+            }).join('');
+
+            const pointNodes = items.map((item, index) => {
+                const x = xForIndex(index);
+                const hoursValue = item.hours || 0;
+                const costValue = item.estimatedCost || 0;
+                return `
+                    <g
+                        data-dash-point="true"
+                        data-date-label="${escapeHtmlAttribute(item.label)}"
+                        data-hours-value="${escapeHtmlAttribute(formatDisplayHM(hoursValue))}"
+                        data-cost-value="${escapeHtmlAttribute(formatCurrencyBR(costValue))}"
+                        data-hours-raw="${escapeHtmlAttribute(String(hoursValue))}"
+                        data-cost-raw="${escapeHtmlAttribute(String(costValue))}"
+                        class="cursor-pointer"
+                    >
+                        <circle cx="${x}" cy="${hoursY(hoursValue)}" r="11" fill="transparent" />
+                        <circle cx="${x}" cy="${costY(costValue)}" r="11" fill="transparent" />
+                        <circle cx="${x}" cy="${hoursY(hoursValue)}" r="4.5" fill="#2563eb" stroke="#ffffff" stroke-width="2" />
+                        <circle cx="${x}" cy="${costY(costValue)}" r="4.5" fill="#059669" stroke="#ffffff" stroke-width="2" />
+                    </g>
+                `;
+            }).join('');
+
+            const labelNodes = dashboardDailyLineLabelsVisible ? items.map((item, index) => {
+                const x = xForIndex(index);
+                const hoursValue = item.hours || 0;
+                const costValue = item.estimatedCost || 0;
+                return `
+                    <g pointer-events="none">
+                        <text x="${x}" y="${hoursY(hoursValue) - 12}" text-anchor="middle" class="fill-blue-700" style="font-size:10px;font-weight:800;paint-order:stroke;stroke:#ffffff;stroke-width:3px;">
+                            ${escapeHtmlDashboard(formatDisplayHM(hoursValue))}
+                        </text>
+                        <text x="${x}" y="${costY(costValue) + 16}" text-anchor="middle" class="fill-emerald-700" style="font-size:10px;font-weight:800;paint-order:stroke;stroke:#ffffff;stroke-width:3px;">
+                            ${escapeHtmlDashboard(formatCurrencyBR(costValue))}
+                        </text>
+                    </g>
+                `;
+            }).join('') : '';
+
+            container.innerHTML = `
+                <div class="relative overflow-x-auto">
+                    <div data-dash-line-tooltip class="pointer-events-none absolute z-20 hidden max-w-[240px] rounded-2xl border border-slate-200 bg-slate-950 px-3 py-2 text-left text-white shadow-2xl">
+                        <div data-dash-line-tooltip-date class="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-300"></div>
+                        <div class="mt-1 text-sm font-black">Detalhes do dia</div>
+                        <div data-dash-line-tooltip-hours class="mt-2 text-xs text-slate-100"></div>
+                        <div data-dash-line-tooltip-cost class="mt-1 text-xs text-slate-100"></div>
+                    </div>
+                    <svg viewBox="0 0 ${width} ${height}" class="w-full min-w-[900px] h-auto" role="img" aria-label="Gráfico de linha por data com horas trabalhadas e custo estimado total">
+                        <rect x="0" y="0" width="${width}" height="${height}" rx="20" fill="#ffffff"></rect>
+                        <line x1="${padding.left}" y1="${padding.top + innerHeight}" x2="${width - padding.right}" y2="${padding.top + innerHeight}" stroke="#cbd5e1" stroke-width="1.2" />
+                        <line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${padding.top + innerHeight}" stroke="#cbd5e1" stroke-width="1.2" />
+                        <line x1="${width - padding.right}" y1="${padding.top}" x2="${width - padding.right}" y2="${padding.top + innerHeight}" stroke="#cbd5e1" stroke-width="1.2" />
+                        ${gridLines}
+                        <text x="${padding.left}" y="18" text-anchor="start" class="fill-slate-400" style="font-size:10px;font-weight:700;">Horas</text>
+                        <text x="${width - padding.right}" y="18" text-anchor="end" class="fill-slate-400" style="font-size:10px;font-weight:700;">Custo estimado</text>
+                        <polyline points="${hoursPoints}" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                        <polyline points="${costPoints}" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                        ${pointNodes}
+                        ${labelNodes}
+                        ${xAxisLabels}
+                    </svg>
+                </div>
+            `;
+
+            const tooltip = container.querySelector('[data-dash-line-tooltip]');
+            if (tooltip) {
+                const tooltipDate = tooltip.querySelector('[data-dash-line-tooltip-date]');
+                const tooltipHours = tooltip.querySelector('[data-dash-line-tooltip-hours]');
+                const tooltipCost = tooltip.querySelector('[data-dash-line-tooltip-cost]');
+                const pointNodes = container.querySelectorAll('[data-dash-point="true"]');
+
+                const showTooltip = (event, pointNode) => {
+                    if (!pointNode || !tooltipDate || !tooltipHours || !tooltipCost) return;
+                    tooltipDate.textContent = pointNode.dataset.dateLabel || '';
+                    tooltipHours.textContent = `Horas trabalhadas: ${pointNode.dataset.hoursValue || '-'}`;
+                    tooltipCost.textContent = `Custo estimado total: ${pointNode.dataset.costValue || '-'}`;
+                    tooltip.classList.remove('hidden');
+
+                    const wrap = container.querySelector('.relative');
+                    const wrapRect = wrap?.getBoundingClientRect();
+                    const targetRect = event.currentTarget?.getBoundingClientRect?.();
+                    if (!wrapRect || !targetRect) return;
+
+                    const x = (targetRect.left - wrapRect.left) + (targetRect.width / 2);
+                    const y = (targetRect.top - wrapRect.top) - 12;
+                    tooltip.style.left = `${Math.max(12, Math.min(x - 120, wrapRect.width - 252))}px`;
+                    tooltip.style.top = `${Math.max(12, y - 96)}px`;
+                };
+
+                const hideTooltip = () => {
+                    tooltip.classList.add('hidden');
+                };
+
+                    pointNodes.forEach(pointNode => {
+                        pointNode.addEventListener('mouseenter', event => showTooltip(event, pointNode));
+                        pointNode.addEventListener('mousemove', event => showTooltip(event, pointNode));
+                        pointNode.addEventListener('mouseleave', hideTooltip);
+                    });
+            }
+        }
+
         function renderDashboardGroupedBars(containerId, items, emptyMessage, seriesList) {
             const container = document.getElementById(containerId);
             if (!container) return;
@@ -2588,7 +2813,7 @@
                             <td class="p-3 font-bold text-slate-700">${escapeHtmlDashboard(item.label || 'Sem nome')}</td>
                             <td class="p-3">${escapeHtmlDashboard(cycleText)}</td>
                             <td class="p-3 whitespace-nowrap">${hours > 0 ? `${formatDisplayHM(hours)} H` : '-'}</td>
-                            <td class="p-3 whitespace-nowrap">${fuel > 0 ? `${formatDisplayHM(fuel)} L` : '-'}</td>
+                            <td class="p-3 whitespace-nowrap">${fuel > 0 ? `${formatDisplayHM(fuel)} litros` : '-'}</td>
                             <td class="p-3 whitespace-nowrap">${operatorCost > 0 ? formatCurrencyBR(operatorCost) : '-'}</td>
                             <td class="p-3 whitespace-nowrap">${fuelCost > 0 ? formatCurrencyBR(fuelCost) : '-'}</td>
                             <td class="p-3 whitespace-nowrap">${estimatedCost > 0 ? formatCurrencyBR(estimatedCost) : '-'}</td>
@@ -2628,7 +2853,7 @@
                         <tr class="align-top">
                             <td class="p-3 font-bold text-slate-700">${escapeHtmlDashboard(item.label || 'Sem nome')}</td>
                             <td class="p-3 whitespace-nowrap">${hours > 0 ? `${formatDisplayHM(hours)} H` : '-'}</td>
-                            <td class="p-3 whitespace-nowrap">${fuel > 0 ? `${formatDisplayHM(fuel)} L` : '-'}</td>
+                            <td class="p-3 whitespace-nowrap">${fuel > 0 ? `${formatDisplayHM(fuel)} litros` : '-'}</td>
                             <td class="p-3 whitespace-nowrap">${operatorCost > 0 ? formatCurrencyBR(operatorCost) : '-'}</td>
                             <td class="p-3 whitespace-nowrap">${fuelCost > 0 ? formatCurrencyBR(fuelCost) : '-'}</td>
                             <td class="p-3 whitespace-nowrap">${estimatedCost > 0 ? formatCurrencyBR(estimatedCost) : '-'}</td>
