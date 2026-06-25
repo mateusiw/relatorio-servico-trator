@@ -250,7 +250,7 @@
                             <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">QUEM SOLICITOU?</label>
                             <select id="taskRequesterSelect" onchange="checkOther('taskRequesterSelect', 'taskRequester')" class="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
                                 <option value="">Selecione...</option>
-                                <option value="Claudio Soares">Claudio Soares</option>
+                                <option value="Claudio Rodrigues">Claudio Rodrigues</option>
                                 <option value="Assis Paulo">Assis Paulo</option>
                                 <option value="Outro">Outro...</option>
                             </select>
@@ -1692,7 +1692,7 @@
                 restoreFieldState('taskImplementSelect', 'taskImplement');
             }
             const itemRequester = item.requester === 'Não informado' ? '' : item.requester;
-            const knownRequesters = ['Claudio Soares', 'Assis Paulo'];
+            const knownRequesters = ['Claudio Rodrigues', 'Assis Paulo'];
             const taskRequesterSelect = document.getElementById('taskRequesterSelect');
             const taskRequester = document.getElementById('taskRequester');
             if(taskRequesterSelect && taskRequester) {
