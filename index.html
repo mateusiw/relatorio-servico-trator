@@ -35,7 +35,7 @@
             grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
         }
         .report-export-desktop .report-activity-grid {
-            grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
         }
     </style>
 </head>
@@ -217,6 +217,7 @@
                                 <option value="Subsolagem">Subsolagem</option>
                                 <option value="Transporte da Colheita">Transporte da Colheita</option>
                                 <option value="Transporte de Material">Transporte de Material</option>
+                                <option value="Concha">Concha</option>
                                 <option value="Outro">Outro...</option>
                             </select>
                             <div id="taskServiceContainer" class="hidden relative">
@@ -261,10 +262,26 @@
                         </div>
                     </div>
 
+                    <!-- HORÁRIO DO SERVIÇO -->
+                    <div class="border border-slate-200/80 rounded-3xl p-4 bg-gradient-to-br from-slate-50/80 to-white mt-2 shadow-sm">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-3 tracking-wider border-b border-slate-100 pb-2">HORÁRIO DO SERVIÇO</div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 mb-1 block uppercase">HORÁRIO INICIAL</label>
+                                <input type="time" id="taskStartTime" oninput="renderReport()" class="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 mb-1 block uppercase">HORÁRIO FINAL</label>
+                                <input type="time" id="taskEndTime" oninput="renderReport()" class="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 text-sm text-slate-800 shadow-sm outline-none transition-all duration-200 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- HORÍMETRO E ABASTECIMENTO DA TAREFA -->
                     <div class="border border-slate-200/80 rounded-3xl p-4 bg-gradient-to-br from-slate-50/80 to-white mt-2 shadow-sm">
                         <div class="text-[10px] font-bold text-slate-400 uppercase mb-3 tracking-wider border-b border-slate-100 pb-2">APONTAMENTO DE HORÍMETRO E COMBUSTÍVEL</div>
-                        
+
                         <div class="grid grid-cols-2 gap-3 mb-3">
                             <div>
                                 <label class="text-[10px] font-bold text-slate-500 mb-1 block uppercase">HORÍMETRO INICIAL</label>
@@ -900,6 +917,18 @@
             const endVal = parseHM(endValue);
             if (!startValue || !endValue || isNaN(startVal) || isNaN(endVal)) return 0;
             return Math.abs(endVal - startVal);
+        }
+
+        function formatTimeDuration(startTime, endTime) {
+            if (!startTime || !endTime) return null;
+            const [sh, sm] = startTime.split(':').map(Number);
+            const [eh, em] = endTime.split(':').map(Number);
+            if ([sh, sm, eh, em].some(n => isNaN(n))) return null;
+            let diff = (eh * 60 + em) - (sh * 60 + sm);
+            if (diff < 0) diff += 24 * 60;
+            const h = Math.floor(diff / 60);
+            const m = diff % 60;
+            return `${String(h).padStart(2, '0')}h${String(m).padStart(2, '0')}`;
         }
 
         function setDefaultDate() {
@@ -1574,7 +1603,7 @@
 
         // --- FORMULÁRIO ---
         function clearTaskForm() {
-            ['taskLocation','taskCycle','taskService','taskImplement','taskRequester','taskStartHM','taskEndHM','taskFuel','taskDieselPrice','taskNotes'].forEach(id => {
+            ['taskLocation','taskCycle','taskService','taskImplement','taskRequester','taskStartTime','taskEndTime','taskStartHM','taskEndHM','taskFuel','taskDieselPrice','taskNotes'].forEach(id => {
                 const el = document.getElementById(id);
                 if(el) el.value = '';
             });
@@ -1621,6 +1650,8 @@
                 service: service,
                 implement: implement,
                 requester: requester,
+                startTime: document.getElementById('taskStartTime')?.value || '',
+                endTime: document.getElementById('taskEndTime')?.value || '',
                 startHM: document.getElementById('taskStartHM')?.value || '',
                 endHM: document.getElementById('taskEndHM')?.value || '',
                 fuel: document.getElementById('taskFuel')?.value || '',
@@ -1658,7 +1689,7 @@
             }
             if (document.getElementById('taskCycle')) document.getElementById('taskCycle').value = item.cycle || '';
             const itemService = item.service === 'Não informado' ? '' : item.service;
-            const knownServices = ['Roçagem (Trituração)', 'Incorporação (Gradagem Pesada)', 'Encanteiramento', 'Distribuição de Calcário e Adubo', 'Aração e Gradagem', 'Subsolagem', 'Transporte da Colheita', 'Transporte de Material'];
+            const knownServices = ['Roçagem (Trituração)', 'Incorporação (Gradagem Pesada)', 'Encanteiramento', 'Distribuição de Calcário e Adubo', 'Aração e Gradagem', 'Subsolagem', 'Transporte da Colheita', 'Transporte de Material', 'Concha'];
             const taskServiceSelect = document.getElementById('taskServiceSelect');
             const taskService = document.getElementById('taskService');
             if(taskServiceSelect && taskService) {
@@ -1708,6 +1739,8 @@
                 }
                 restoreFieldState('taskRequesterSelect', 'taskRequester');
             }
+            if(document.getElementById('taskStartTime')) document.getElementById('taskStartTime').value = item.startTime || '';
+            if(document.getElementById('taskEndTime')) document.getElementById('taskEndTime').value = item.endTime || '';
             if(document.getElementById('taskStartHM')) document.getElementById('taskStartHM').value = item.startHM || '';
             if(document.getElementById('taskEndHM')) document.getElementById('taskEndHM').value = item.endHM || '';
             if(document.getElementById('taskFuel')) document.getElementById('taskFuel').value = item.fuel || '';
@@ -1814,7 +1847,7 @@
                     <li class="flex justify-between items-center p-2 rounded border ${active} transition-all">
                         <div class="flex flex-col">
                             <span class="font-bold text-slate-700 text-xs pb-0.5 report-text">${item.location}</span>
-                            <span class="text-[10px] text-slate-500 pb-0.5 report-text">${item.service} | Ciclo: ${item.cycle || '-'} (HM: ${item.startHM || '-'} - ${item.endHM || '-'})</span>
+                            <span class="text-[10px] text-slate-500 pb-0.5 report-text">${item.service} | Ciclo: ${item.cycle || '-'} (HM: ${item.startHM || '-'} - ${item.endHM || '-'}) ${(item.startTime || item.endTime) ? `[${item.startTime || '-'} às ${item.endTime || '-'}]` : ''}</span>
                         </div>
                         <div class="flex items-center">
                             <button onclick="editItem(${index})" class="text-blue-500 hover:bg-blue-100 p-1.5 rounded-md mr-1"><i data-lucide="pencil" width="14"></i></button>
@@ -1885,6 +1918,7 @@
                 tasksData.forEach((item, index) => {
                     const hmHours = calculateTaskHours(item.startHM, item.endHM);
                     const hmDiff = hmHours > 0 ? formatDisplayHM(hmHours) : '-';
+                    const timeDuration = formatTimeDuration(item.startTime, item.endTime);
                     cardsHtml += `
                     <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden mb-3 last:mb-0 shadow-sm">
                         <div class="flex items-start justify-between gap-4 px-4 sm:px-5 py-4 border-b border-slate-200 bg-slate-50/80">
@@ -1900,8 +1934,21 @@
                                     </div>
                                 </div>
                             </div>
+                            ${(item.startTime || item.endTime) ? `
+                            <div class="shrink-0 flex flex-col items-end gap-1">
+                                <span class="rounded-full bg-white px-2.5 py-1 border border-slate-200 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-600 report-text whitespace-nowrap">${item.startTime || '-'} às ${item.endTime || '-'}</span>
+                                ${timeDuration ? `<span class="rounded-full bg-emerald-50 px-2.5 py-1 border border-emerald-200 text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-700 report-text whitespace-nowrap">Total ${timeDuration}</span>` : ''}
+                            </div>` : ''}
                         </div>
-                        <div class="report-activity-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-px bg-slate-200">
+                        <div class="report-activity-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-px bg-slate-200">
+                            <div class="bg-white px-4 py-2 h-full min-h-[70px] flex flex-col items-center justify-center text-center">
+                                <div class="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-400 report-text whitespace-nowrap">Horário início</div>
+                                <div class="mt-1 text-[13px] font-semibold text-slate-900 report-text whitespace-nowrap">${item.startTime || '-'}</div>
+                            </div>
+                            <div class="bg-white px-4 py-2 h-full min-h-[70px] flex flex-col items-center justify-center text-center">
+                                <div class="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-400 report-text whitespace-nowrap">Horário final</div>
+                                <div class="mt-1 text-[13px] font-semibold text-slate-900 report-text whitespace-nowrap">${item.endTime || '-'}</div>
+                            </div>
                             <div class="bg-white px-4 py-2 h-full min-h-[70px] flex flex-col items-center justify-center text-center">
                                 <div class="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-400 report-text whitespace-nowrap">Horímetro início</div>
                                 <div class="mt-1 text-[13px] font-semibold text-slate-900 report-text whitespace-nowrap">${item.startHM || '-'}</div>
