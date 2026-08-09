@@ -35,7 +35,7 @@
             grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
         }
         .report-export-desktop .report-activity-grid {
-            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
         }
     </style>
 </head>
@@ -330,7 +330,7 @@
 
         <!-- PREVIEW -->
         <div class="w-full lg:w-2/3 flex flex-col bg-gradient-to-br from-slate-100 via-white to-sky-50/40 p-4 rounded-[2rem] border border-slate-200/70 min-h-[calc(100vh-6rem)] shadow-inner">
-            <div id="report-card" class="w-full flex-1 flex flex-col bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 relative">
+            <div id="report-card" class="w-full flex-1 flex flex-col bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-300 relative">
                 
                 <!-- Cabeçalho -->
                 <div class="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-700 p-6 text-white relative overflow-hidden flex flex-col justify-start shrink-0 gap-4 antialiased">
@@ -372,11 +372,11 @@
                 </div>
 
                 <!-- Footer Operacional -->
-                <div id="operationalFooter" class="bg-slate-50 border-t border-slate-200 p-4 shrink-0"></div>
+                <div id="operationalFooter" class="bg-slate-50 border-t border-slate-300 p-4 shrink-0"></div>
 
                 <!-- Rodapé Marca -->
-                <div class="bg-slate-100 p-3 text-center border-t border-slate-200 shrink-0">
-                    <div class="flex justify-center items-center gap-2 text-[10px] text-slate-400 font-medium uppercase tracking-widest pb-0.5 report-text">
+                <div class="bg-slate-100 p-3 text-center border-t border-slate-300 shrink-0">
+                    <div class="flex justify-center items-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-widest pb-0.5 report-text">
                         SPG Oásis • Diário Oficial do Operador
                     </div>
                 </div>
@@ -469,13 +469,21 @@
                 </div>
                 <p id="dashboardStatus" class="text-xs sm:text-sm text-slate-300">Resumo geral dos dados da planilha.</p>
             </div>
+            <div class="bg-white border-b border-slate-200 px-4 sm:px-5 pt-3 flex items-center gap-2">
+                <button type="button" id="dashboardTabOverviewBtn" onclick="switchDashboardTab('overview')" class="px-4 py-2 rounded-t-lg text-xs font-bold uppercase tracking-wide transition-colors border border-b-0 border-slate-200 bg-white text-slate-900">
+                    Visão Geral
+                </button>
+                <button type="button" id="dashboardTabExecutiveBtn" onclick="switchDashboardTab('executive')" class="px-4 py-2 rounded-t-lg text-xs font-bold uppercase tracking-wide transition-colors border border-b-0 border-transparent text-slate-500 hover:text-slate-800">
+                    Resumo Executivo
+                </button>
+            </div>
             <div id="dashboardContent" class="p-4 sm:p-5">
                 <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm mb-4">
                     <div class="flex flex-col gap-1">
                         <h4 class="text-sm font-black text-slate-800">Custos automáticos</h4>
-                        <p class="text-xs text-slate-500">O salário é lido na aba <strong>Operadores</strong> pelo nome do operador, e o diesel é considerado por serviço a partir do valor informado em cada atividade.</p>
+                        <p class="text-xs text-slate-500">O salário é lido na aba <strong>Operadores</strong> pelo nome do operador, o diesel é considerado por serviço a partir do valor informado em cada atividade, e a depreciação é lida na aba <strong>Máquinas</strong> (valor de compra, vida útil e valor residual) somando o trator e o implemento usados em cada atividade.</p>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-4">
                         <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
                             <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold">Diesel</div>
                             <div id="dashDieselSource" class="mt-2 text-sm font-bold text-slate-900">-</div>
@@ -487,9 +495,61 @@
                             <div class="text-xs text-slate-500 mt-1">custo calculado com base em 220h</div>
                         </div>
                         <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                            <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold">Depreciação</div>
+                            <div id="dashDepreciationSource" class="mt-2 text-sm font-bold text-slate-900">-</div>
+                            <div class="text-xs text-slate-500 mt-1">(compra - residual) ÷ vida útil</div>
+                        </div>
+                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
                             <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold">Custo por hora</div>
                             <div id="dashOperatorHourlyRate" class="mt-2 text-sm font-bold text-slate-900">-</div>
                             <div class="text-xs text-slate-500 mt-1">salário mensal ÷ 220h</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm mb-4">
+                    <div class="flex flex-col gap-1">
+                        <h4 class="text-sm font-black text-slate-800">Base de cálculo: Operadores e Máquinas</h4>
+                        <p class="text-xs text-slate-500">Mostra exatamente os valores cadastrados nas abas <strong>Operadores</strong> e <strong>Máquinas</strong> da planilha, e o custo-hora que o dashboard calcula a partir deles, para conferência de como os custos automáticos são apurados.</p>
+                    </div>
+                    <div class="mt-4">
+                        <h5 class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold mb-2">Operadores</h5>
+                        <button type="button" id="dashOperatorsReferenceToggleBtn" onclick="toggleDashboardTable('dashOperatorsReferenceTableWrap', 'dashOperatorsReferenceToggleBtn')" class="mb-3 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors flex items-center gap-2">
+                            <i data-lucide="chevrons-down-up" class="w-4 h-4"></i>
+                            <span>Abrir Tabela</span>
+                        </button>
+                        <div id="dashOperatorsReferenceTableWrap" class="hidden overflow-x-auto max-h-[320px] overflow-y-auto border border-slate-100 rounded-xl">
+                            <table class="w-full min-w-[500px] text-left text-xs">
+                                <thead class="bg-slate-50 text-slate-500 uppercase tracking-[0.12em]">
+                                    <tr>
+                                        <th class="p-3">Nome</th>
+                                        <th class="p-3">Salário mensal</th>
+                                        <th class="p-3">Custo-hora (salário ÷ 220h)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashOperatorsReferenceRows" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h5 class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold mb-2">Máquinas</h5>
+                        <button type="button" id="dashMachinesReferenceToggleBtn" onclick="toggleDashboardTable('dashMachinesReferenceTableWrap', 'dashMachinesReferenceToggleBtn')" class="mb-3 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors flex items-center gap-2">
+                            <i data-lucide="chevrons-down-up" class="w-4 h-4"></i>
+                            <span>Abrir Tabela</span>
+                        </button>
+                        <div id="dashMachinesReferenceTableWrap" class="hidden overflow-x-auto max-h-[320px] overflow-y-auto border border-slate-100 rounded-xl">
+                            <table class="w-full min-w-[800px] text-left text-xs">
+                                <thead class="bg-slate-50 text-slate-500 uppercase tracking-[0.12em]">
+                                    <tr>
+                                        <th class="p-3">Nome</th>
+                                        <th class="p-3">Valor de compra</th>
+                                        <th class="p-3">Vida útil (horas)</th>
+                                        <th class="p-3">Valor residual</th>
+                                        <th class="p-3">Custo-hora de depreciação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashMachinesReferenceRows" class="divide-y divide-slate-100"></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -565,7 +625,7 @@
                     <div class="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
                         <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold">Custo estimado</div>
                         <div id="dashCustoTotal" class="mt-2 text-2xl font-black text-slate-900">-</div>
-                        <div class="text-xs text-slate-500 mt-1">soma do operador e do diesel no período</div>
+                        <div class="text-xs text-slate-500 mt-1">soma do operador, do diesel e da depreciação no período</div>
                     </div>
                 </div>
 
@@ -591,12 +651,13 @@
 
                 <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm mb-4">
                     <h4 class="text-sm font-black text-slate-800">Indicadores por local</h4>
-                    <p class="text-xs text-slate-500 mt-1 mb-4">Compara, no mesmo gráfico, horas trabalhadas, combustível, custo do operador e custo do diesel para cada local do recorte atual.</p>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-4">
+                    <p class="text-xs text-slate-500 mt-1 mb-4">Compara, no mesmo gráfico, horas trabalhadas, combustível, custo do operador, custo do diesel e custo de depreciação para cada local do recorte atual.</p>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-4">
                         <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>Horas</span>
                         <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>Combustível</span>
                         <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>Operador</span>
                         <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>Diesel</span>
+                        <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-violet-600"></span>Depreciação</span>
                     </div>
                     <div id="dashCombinedChart"></div>
                 </div>
@@ -625,13 +686,13 @@
                         <div id="dashLocations" class="space-y-3"></div>
                         <div class="mt-4">
                             <h5 class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold mb-2">Custo estimado por local</h5>
-                            <p class="text-xs text-slate-500 mb-3">Resume o custo acumulado de cada local, considerando horas, salário do operador e diesel informado por atividade.</p>
+                            <p class="text-xs text-slate-500 mb-3">Resume o custo acumulado de cada local, considerando horas, salário do operador, diesel informado por atividade e depreciação do trator.</p>
                             <button type="button" id="dashLocationsCostToggleBtn" onclick="toggleDashboardTable('dashLocationsCostTableWrap', 'dashLocationsCostToggleBtn')" class="mb-3 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors flex items-center gap-2">
                                 <i data-lucide="chevrons-down-up" class="w-4 h-4"></i>
                                 <span>Abrir Tabela</span>
                             </button>
                             <div id="dashLocationsCostTableWrap" class="hidden overflow-x-auto max-h-[420px] overflow-y-auto border border-slate-100 rounded-xl">
-                                <table class="w-full min-w-[1200px] text-left text-xs">
+                                <table class="w-full min-w-[1350px] text-left text-xs">
                                     <thead class="bg-slate-50 text-slate-500 uppercase tracking-[0.12em]">
                                         <tr>
                                             <th class="p-3">Local</th>
@@ -640,6 +701,7 @@
                                             <th class="p-3">Diesel usado</th>
                                             <th class="p-3">Custo total do operador</th>
                                             <th class="p-3">Custo total do diesel</th>
+                                            <th class="p-3">Custo total da depreciação</th>
                                             <th class="p-3">Custo estimado total</th>
                                         </tr>
                                     </thead>
@@ -659,13 +721,13 @@
                         </div>
                         <div class="mt-4">
                             <h5 class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold mb-2">Custo estimado por serviço</h5>
-                            <p class="text-xs text-slate-500 mb-3">Mostra o custo estimado de cada serviço somando horas, salário do operador e valor do diesel registrado.</p>
+                            <p class="text-xs text-slate-500 mb-3">Mostra o custo estimado de cada serviço somando horas, salário do operador, valor do diesel registrado e depreciação do trator.</p>
                             <button type="button" id="dashServicesCostToggleBtn" onclick="toggleDashboardTable('dashServicesCostTableWrap', 'dashServicesCostToggleBtn')" class="mb-3 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors flex items-center gap-2">
                                 <i data-lucide="chevrons-down-up" class="w-4 h-4"></i>
                                 <span>Abrir Tabela</span>
                             </button>
                             <div id="dashServicesCostTableWrap" class="hidden overflow-x-auto max-h-[420px] overflow-y-auto border border-slate-100 rounded-xl">
-                                <table class="w-full min-w-[1100px] text-left text-xs">
+                                <table class="w-full min-w-[1250px] text-left text-xs">
                                     <thead class="bg-slate-50 text-slate-500 uppercase tracking-[0.12em]">
                                         <tr>
                                             <th class="p-3">Serviço</th>
@@ -673,6 +735,7 @@
                                             <th class="p-3">Diesel usado</th>
                                             <th class="p-3">Custo total do operador</th>
                                             <th class="p-3">Custo total do diesel</th>
+                                            <th class="p-3">Custo total da depreciação</th>
                                             <th class="p-3">Custo estimado total</th>
                                         </tr>
                                     </thead>
@@ -738,6 +801,87 @@
                 </div>
 
             <div id="dashboardError" class="hidden mt-4 rounded-2xl border border-red-200 bg-red-50 text-red-700 p-4 text-sm"></div>
+        </div>
+        <div id="dashboardExecutiveContent" class="hidden p-4 sm:p-5">
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm mb-4">
+                <h4 class="text-sm font-black text-slate-800">Resumo Executivo</h4>
+                <p class="text-xs text-slate-500 mt-1">Resposta rápida para perguntas como "quanto custa fazer X?" — todos os serviços cadastrados, com custo por hora, total já gasto e o percentual que cada um representa do custo total, considerando o mesmo recorte de filtros aplicado na Visão Geral.</p>
+                <p id="dashboardExecutiveContext" class="text-xs text-slate-400 mt-2 italic"></p>
+            </div>
+            <div id="dashboardExecutiveCards" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"></div>
+
+            <div class="mt-4">
+                <button type="button" id="dashboardExecutiveExplainToggleBtn" onclick="toggleDashboardExecutiveExplain()" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors flex items-center gap-2">
+                    <i data-lucide="chevrons-down-up" class="w-4 h-4"></i>
+                    <span>Como esse cálculo é feito</span>
+                </button>
+                <div id="dashboardExecutiveExplainBody" class="hidden mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600 space-y-4">
+                    <div>
+                        <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold mb-1">Fórmula do custo por hora</div>
+                        <p><code class="text-slate-800 font-semibold">custo por hora do serviço = (custo do operador + custo do diesel + custo de depreciação) ÷ horas trabalhadas naquele serviço</code>, somando todas as atividades daquele serviço dentro do recorte de filtros atual.</p>
+                    </div>
+                    <div>
+                        <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold mb-1">Fórmula do percentual</div>
+                        <p><code class="text-slate-800 font-semibold">% do total = custo do serviço ÷ soma do custo de todos os serviços do recorte</code>, em porcentagem.</p>
+                    </div>
+                    <div>
+                        <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold mb-1">De onde vem cada valor na planilha</div>
+                        <ul class="list-disc pl-4 space-y-1.5">
+                            <li><strong>Horas:</strong> aba <code>Operacional Trator</code>, é a diferença entre as colunas <code>HM Final</code> e <code>HM Inicial</code> de cada atividade lançada no formulário.</li>
+                            <li><strong>Custo do operador:</strong> aba <code>Operadores</code> (colunas <code>Nome</code> e <code>Salário</code>) — o custo-hora do operador é <code>salário mensal ÷ 220h</code>, multiplicado pelas horas de cada atividade.</li>
+                            <li><strong>Custo do diesel:</strong> aba <code>Operacional Trator</code>, colunas <code>Combustível (L)</code> × <code>Óleo Diesel (R$/L)</code> de cada atividade (esse valor de preço é preenchido manualmente na planilha).</li>
+                            <li><strong>Custo de depreciação:</strong> aba <code>Máquinas</code> (colunas <code>Nome</code>, <code>Valor de Compra</code>, <code>Vida Útil (horas)</code> e <code>Valor Residual</code>) — o custo-hora de cada máquina é <code>(valor de compra − valor residual) ÷ vida útil em horas</code>; o total soma a taxa do trator e do implemento usados na atividade, multiplicada pelas horas.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm mt-4">
+                <div class="flex flex-col gap-1">
+                    <h4 class="text-sm font-black text-slate-800">Valores cadastrados: Operadores e Máquinas</h4>
+                    <p class="text-xs text-slate-500">Os mesmos dados usados no cálculo acima, direto das abas <strong>Operadores</strong> e <strong>Máquinas</strong> da planilha, para conferência.</p>
+                </div>
+                <div class="mt-4">
+                    <h5 class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold mb-2">Operadores</h5>
+                    <button type="button" id="dashExecOperatorsReferenceToggleBtn" onclick="toggleDashboardTable('dashExecOperatorsReferenceTableWrap', 'dashExecOperatorsReferenceToggleBtn')" class="mb-3 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors flex items-center gap-2">
+                        <i data-lucide="chevrons-down-up" class="w-4 h-4"></i>
+                        <span>Abrir Tabela</span>
+                    </button>
+                    <div id="dashExecOperatorsReferenceTableWrap" class="hidden overflow-x-auto max-h-[320px] overflow-y-auto border border-slate-100 rounded-xl">
+                        <table class="w-full min-w-[500px] text-left text-xs">
+                            <thead class="bg-slate-50 text-slate-500 uppercase tracking-[0.12em]">
+                                <tr>
+                                    <th class="p-3">Nome</th>
+                                    <th class="p-3">Salário mensal</th>
+                                    <th class="p-3">Custo-hora (salário ÷ 220h)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashExecOperatorsReferenceRows" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <h5 class="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-bold mb-2">Máquinas</h5>
+                    <button type="button" id="dashExecMachinesReferenceToggleBtn" onclick="toggleDashboardTable('dashExecMachinesReferenceTableWrap', 'dashExecMachinesReferenceToggleBtn')" class="mb-3 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors flex items-center gap-2">
+                        <i data-lucide="chevrons-down-up" class="w-4 h-4"></i>
+                        <span>Abrir Tabela</span>
+                    </button>
+                    <div id="dashExecMachinesReferenceTableWrap" class="hidden overflow-x-auto max-h-[320px] overflow-y-auto border border-slate-100 rounded-xl">
+                        <table class="w-full min-w-[800px] text-left text-xs">
+                            <thead class="bg-slate-50 text-slate-500 uppercase tracking-[0.12em]">
+                                <tr>
+                                    <th class="p-3">Nome</th>
+                                    <th class="p-3">Valor de compra</th>
+                                    <th class="p-3">Vida útil (horas)</th>
+                                    <th class="p-3">Valor residual</th>
+                                    <th class="p-3">Custo-hora de depreciação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashExecMachinesReferenceRows" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1530,6 +1674,37 @@
             }
         }
 
+        function switchDashboardTab(tab) {
+            const overviewPanel = document.getElementById('dashboardContent');
+            const executivePanel = document.getElementById('dashboardExecutiveContent');
+            const overviewBtn = document.getElementById('dashboardTabOverviewBtn');
+            const executiveBtn = document.getElementById('dashboardTabExecutiveBtn');
+            if (!overviewPanel || !executivePanel || !overviewBtn || !executiveBtn) return;
+
+            const isExecutive = tab === 'executive';
+            overviewPanel.classList.toggle('hidden', isExecutive);
+            executivePanel.classList.toggle('hidden', !isExecutive);
+
+            const activeClasses = ['bg-white', 'text-slate-900', 'border-slate-200'];
+            const inactiveClasses = ['border-transparent', 'text-slate-500'];
+            overviewBtn.classList.remove(...activeClasses, ...inactiveClasses);
+            executiveBtn.classList.remove(...activeClasses, ...inactiveClasses);
+            overviewBtn.classList.add(...(isExecutive ? inactiveClasses : activeClasses));
+            executiveBtn.classList.add(...(isExecutive ? activeClasses : inactiveClasses));
+        }
+
+        function toggleDashboardExecutiveExplain() {
+            const body = document.getElementById('dashboardExecutiveExplainBody');
+            const button = document.getElementById('dashboardExecutiveExplainToggleBtn');
+            if (!body || !button) return;
+
+            const isHidden = body.classList.toggle('hidden');
+            button.innerHTML = isHidden
+                ? '<i data-lucide="chevrons-down-up" class="w-4 h-4"></i><span>Como esse cálculo é feito</span>'
+                : '<i data-lucide="chevrons-up-down" class="w-4 h-4"></i><span>Ocultar explicação do cálculo</span>';
+            lucide.createIcons();
+        }
+
         function toggleDashboardTable(wrapId, buttonId) {
             const wrap = document.getElementById(wrapId);
             const button = document.getElementById(buttonId);
@@ -1891,28 +2066,28 @@
                 }
             });
             summaryHeader.innerHTML = `
-                <div class="bg-white border-b border-slate-200 px-4 sm:px-5 py-4">
+                <div class="bg-white border-b border-slate-300 px-4 sm:px-5 py-4">
                     <div class="report-kpi-grid grid grid-cols-1 gap-3 sm:[grid-template-columns:0.82fr_1.09fr_1.09fr]">
-                        <div class="min-h-[84px] rounded-2xl border border-slate-200 bg-white px-3.5 py-3 flex items-center justify-between gap-3 shadow-sm">
+                        <div class="min-h-[84px] rounded-2xl border border-slate-300 bg-white px-3.5 py-3 flex items-center justify-between gap-3 shadow-md">
                             <div>
-                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.24em] report-text block">Registros</span>
+                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.24em] report-text block">Registros</span>
                                 <span class="mt-1 text-[11px] text-slate-500 report-text block">Atividades no painel</span>
                             </div>
-                            <span class="shrink-0 whitespace-nowrap text-slate-900 font-black text-[1.75rem] leading-none report-text">${tasksData.length}</span>
+                            <span class="shrink-0 whitespace-nowrap text-slate-900 font-black text-[1.9rem] leading-none report-text">${tasksData.length}</span>
                         </div>
-                        <div class="min-h-[84px] rounded-2xl border border-slate-200 bg-slate-50 px-3.5 py-3 flex items-center justify-between gap-3 shadow-sm">
+                        <div class="min-h-[84px] rounded-2xl border border-slate-900 bg-slate-900 px-3.5 py-3 flex items-center justify-between gap-3 shadow-md">
                             <div>
                                 <span class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.24em] report-text block">Total HM</span>
-                                <span class="mt-1 text-[11px] text-slate-500 report-text block">Somatório do período</span>
+                                <span class="mt-1 text-[11px] text-slate-400 report-text block">Somatório do período</span>
                             </div>
-                            <span class="shrink-0 whitespace-nowrap text-slate-900 font-black text-[1.75rem] leading-none report-text">${totalHM > 0 ? `${formatDisplayHM(totalHM)} H` : '0 H'}</span>
+                            <span class="shrink-0 whitespace-nowrap text-white font-black text-[1.9rem] leading-none report-text">${totalHM > 0 ? `${formatDisplayHM(totalHM)} H` : '0 H'}</span>
                         </div>
-                        <div class="min-h-[84px] rounded-2xl border border-slate-200 bg-white px-3.5 py-3 flex items-center justify-between gap-3 shadow-sm">
+                        <div class="min-h-[84px] rounded-2xl border border-slate-300 bg-white px-3.5 py-3 flex items-center justify-between gap-3 shadow-md">
                             <div>
-                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.24em] report-text block">Total combustível</span>
+                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.24em] report-text block">Total combustível</span>
                                 <span class="mt-1 text-[11px] text-slate-500 report-text block">Consumo consolidado</span>
                             </div>
-                            <span class="shrink-0 whitespace-nowrap text-slate-900 font-black text-[1.75rem] leading-none report-text">${totalFuel > 0 ? `${formatDisplayHM(totalFuel)} L` : '0 L'}</span>
+                            <span class="shrink-0 whitespace-nowrap text-slate-900 font-black text-[1.9rem] leading-none report-text">${totalFuel > 0 ? `${formatDisplayHM(totalFuel)} L` : '0 L'}</span>
                         </div>
                     </div>
                 </div>`;
@@ -1925,59 +2100,51 @@
                     const hmDiff = hmHours > 0 ? formatDisplayHM(hmHours) : '-';
                     const timeDuration = formatTimeDuration(item.startTime, item.endTime);
                     cardsHtml += `
-                    <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden mb-3 last:mb-0 shadow-sm">
-                        <div class="flex items-start justify-between gap-4 px-4 sm:px-5 py-4 border-b border-slate-200 bg-slate-50/80">
+                    <div class="bg-white rounded-3xl border border-slate-300 overflow-hidden mb-3 last:mb-0 shadow-md">
+                        <div class="flex items-start justify-between gap-4 px-4 sm:px-5 py-4 border-b border-slate-300 bg-slate-100">
                             <div class="min-w-0 flex items-center gap-3">
                                 <div class="shrink-0 text-sm font-black tracking-[0.16em] text-slate-900 report-text whitespace-nowrap"># ${index + 1}</div>
                                 <div class="min-w-0">
                                     <div class="flex flex-wrap items-center gap-x-2 gap-y-2">
                                         <span class="text-sm sm:text-base font-black text-slate-900 report-text">${item.service || 'Serviço não informado'}</span>
-                                        <div class="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-slate-500 report-text">
-                                            <span class="rounded-full bg-white px-2.5 py-1 border border-slate-200">${item.location || '-'}</span>
-                                            <span class="rounded-full bg-sky-50 px-2.5 py-1 border border-sky-200 text-sky-700 shadow-sm">${item.requester || 'Solicitante não informado'}</span>
+                                        <div class="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.2em] report-text">
+                                            <span class="rounded-full bg-white px-2.5 py-1 border border-slate-300 text-slate-700 font-bold">${item.location || '-'}</span>
+                                            <span class="rounded-full bg-sky-50 px-2.5 py-1 border border-sky-200 text-sky-700 font-bold shadow-sm">${item.requester || 'Solicitante não informado'}</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             ${(item.startTime || item.endTime) ? `
                             <div class="shrink-0 flex flex-col items-end gap-1">
-                                <span class="rounded-full bg-white px-2.5 py-1 border border-slate-200 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-600 report-text whitespace-nowrap">${item.startTime || '-'} às ${item.endTime || '-'}</span>
+                                <span class="rounded-full bg-white px-2.5 py-1 border border-slate-300 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-700 report-text whitespace-nowrap">${item.startTime || '-'} às ${item.endTime || '-'}</span>
                                 ${timeDuration ? `<span class="rounded-full bg-emerald-50 px-2.5 py-1 border border-emerald-200 text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-700 report-text whitespace-nowrap">Total ${timeDuration}</span>` : ''}
                             </div>` : ''}
                         </div>
-                        <div class="report-activity-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-px bg-slate-200">
-                            <div class="bg-white px-4 py-2 h-full min-h-[70px] flex flex-col items-center justify-center text-center">
-                                <div class="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-400 report-text whitespace-nowrap">Horário início</div>
-                                <div class="mt-1 text-[13px] font-semibold text-slate-900 report-text whitespace-nowrap">${item.startTime || '-'}</div>
+                        <div class="report-activity-grid grid grid-cols-1 sm:grid-cols-5 gap-px bg-slate-300">
+                            <div class="bg-slate-50 px-4 py-2 h-full min-h-[70px] flex flex-col items-center justify-center text-center">
+                                <div class="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-500 report-text whitespace-nowrap">Horímetro início</div>
+                                <div class="mt-1 text-sm font-black text-slate-900 report-text whitespace-nowrap">${item.startHM || '-'}</div>
                             </div>
-                            <div class="bg-white px-4 py-2 h-full min-h-[70px] flex flex-col items-center justify-center text-center">
-                                <div class="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-400 report-text whitespace-nowrap">Horário final</div>
-                                <div class="mt-1 text-[13px] font-semibold text-slate-900 report-text whitespace-nowrap">${item.endTime || '-'}</div>
+                            <div class="bg-slate-50 px-4 py-2 h-full min-h-[70px] flex flex-col items-center justify-center text-center">
+                                <div class="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-500 report-text whitespace-nowrap">Horímetro final</div>
+                                <div class="mt-1 text-sm font-black text-slate-900 report-text whitespace-nowrap">${item.endHM || '-'}</div>
                             </div>
-                            <div class="bg-white px-4 py-2 h-full min-h-[70px] flex flex-col items-center justify-center text-center">
-                                <div class="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-400 report-text whitespace-nowrap">Horímetro início</div>
-                                <div class="mt-1 text-[13px] font-semibold text-slate-900 report-text whitespace-nowrap">${item.startHM || '-'}</div>
+                            <div class="bg-slate-50 px-4 py-2 h-full min-h-[70px] flex flex-col items-center justify-center text-center">
+                                <div class="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-500 report-text whitespace-nowrap">Horímetro total</div>
+                                <div class="mt-1 text-sm font-black text-slate-900 report-text whitespace-nowrap">${hmDiff}${hmDiff !== '-' ? ' H' : ''}</div>
                             </div>
-                            <div class="bg-white px-4 py-2 h-full min-h-[70px] flex flex-col items-center justify-center text-center">
-                                <div class="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-400 report-text whitespace-nowrap">Horímetro final</div>
-                                <div class="mt-1 text-[13px] font-semibold text-slate-900 report-text whitespace-nowrap">${item.endHM || '-'}</div>
+                            <div class="bg-slate-50 px-4 py-2 h-full min-h-[70px] flex flex-col items-center justify-center text-center">
+                                <div class="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-500 report-text whitespace-nowrap">Implemento</div>
+                                <div class="mt-1 text-sm font-black text-slate-900 report-text whitespace-nowrap">${item.implement || 'Não informado'}</div>
                             </div>
-                            <div class="bg-white px-4 py-2 h-full min-h-[70px] flex flex-col items-center justify-center text-center">
-                                <div class="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-400 report-text whitespace-nowrap">Horímetro total</div>
-                                <div class="mt-1 text-[13px] font-semibold text-slate-900 report-text whitespace-nowrap">${hmDiff}${hmDiff !== '-' ? ' H' : ''}</div>
-                            </div>
-                            <div class="bg-white px-4 py-2 h-full min-h-[70px] flex flex-col items-center justify-center text-center">
-                                <div class="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-400 report-text whitespace-nowrap">Implemento</div>
-                                <div class="mt-1 text-[13px] font-semibold text-slate-900 report-text whitespace-nowrap">${item.implement || 'Não informado'}</div>
-                            </div>
-                            <div class="bg-white px-4 py-2 h-full min-h-[70px] flex flex-col items-center justify-center text-center">
-                                <div class="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-400 report-text whitespace-nowrap">Combustível</div>
-                                <div class="mt-1 text-[13px] font-semibold text-slate-900 report-text whitespace-nowrap">${item.fuel ? `${item.fuel} L` : 'Não informado'}</div>
+                            <div class="bg-slate-50 px-4 py-2 h-full min-h-[70px] flex flex-col items-center justify-center text-center">
+                                <div class="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-500 report-text whitespace-nowrap">Combustível</div>
+                                <div class="mt-1 text-sm font-black text-slate-900 report-text whitespace-nowrap">${item.fuel ? `${item.fuel} L` : 'Não informado'}</div>
                             </div>
                         </div>
                         <div class="px-4 sm:px-5 py-4 bg-white">
-                            <div class="text-[9px] font-bold uppercase tracking-[0.24em] text-slate-400 report-text">Observações</div>
-                            <div class="mt-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 report-text break-words">
+                            <div class="text-[9px] font-bold uppercase tracking-[0.24em] text-slate-500 report-text">Observações</div>
+                            <div class="mt-2 rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-600 report-text break-words">
                                 ${item.notes || 'Sem observações'}
                             </div>
                         </div>
@@ -2229,6 +2396,7 @@
             const operatorSource = document.getElementById('dashOperatorSource');
             const operatorHourlyRate = document.getElementById('dashOperatorHourlyRate');
             const dieselSource = document.getElementById('dashDieselSource');
+            const depreciationSource = document.getElementById('dashDepreciationSource');
             const updatedAt = document.getElementById('dashboardUpdatedAt');
             const status = document.getElementById('dashboardStatus');
             const rowsInfo = document.getElementById('dashRowsInfo');
@@ -2239,7 +2407,8 @@
             const totalFuel = totals.totalCombustivelValue;
             const fuelCost = totals.totalFuelCostValue;
             const operatorCost = totals.totalOperatorCostValue || sumOperatorCosts(filteredRecords);
-            const estimatedTotalCost = operatorCost + fuelCost;
+            const depreciationCost = totals.totalDepreciationCostValue || 0;
+            const estimatedTotalCost = operatorCost + fuelCost + depreciationCost;
             const hourlyCost = totalHours > 0 ? (estimatedTotalCost / totalHours) : 0;
             const operatorHourlyRateValue = totalHours > 0 ? (operatorCost / totalHours) : 0;
             if (totalRegistros) totalRegistros.textContent = totals.totalRegistros;
@@ -2250,6 +2419,7 @@
             if (operatorSource) operatorSource.textContent = operatorCost > 0 ? formatCurrencyBR(operatorCost) : '-';
             if (operatorHourlyRate) operatorHourlyRate.textContent = operatorHourlyRateValue > 0 ? formatCurrencyBR(operatorHourlyRateValue) : '-';
             if (dieselSource) dieselSource.textContent = fuelCost > 0 ? formatCurrencyBR(fuelCost) : '-';
+            if (depreciationSource) depreciationSource.textContent = depreciationCost > 0 ? formatCurrencyBR(depreciationCost) : '-';
             if (updatedAt) updatedAt.textContent = `Atualizado em ${data.generatedAt || 'data não informada'}`;
             if (status) status.textContent = filteredRecords.length === allRecords.length ? 'Resumo geral carregado diretamente na página.' : 'Resumo filtrado conforme os critérios selecionados.';
 
@@ -2269,6 +2439,10 @@
                     : '<div class="rounded-lg bg-white/5 border border-white/10 px-3 py-2">Sem dados suficientes para gerar o resumo automático.</div>';
             }
 
+            renderDashboardOperatorsReferenceTable('dashOperatorsReferenceRows', data.operatorDetails || [], 'Nenhum operador cadastrado na aba Operadores.');
+            renderDashboardMachinesReferenceTable('dashMachinesReferenceRows', data.machineDetails || [], 'Nenhuma máquina cadastrada na aba Máquinas.');
+            renderDashboardOperatorsReferenceTable('dashExecOperatorsReferenceRows', data.operatorDetails || [], 'Nenhum operador cadastrado na aba Operadores.');
+            renderDashboardMachinesReferenceTable('dashExecMachinesReferenceRows', data.machineDetails || [], 'Nenhuma máquina cadastrada na aba Máquinas.');
             renderDashboardBars('dashLocations', totals.byLocationHours || [], 'Nenhum local encontrado.', 'h');
             renderDashboardBars('dashServices', totals.byServiceHours || [], 'Nenhum serviço encontrado.', 'h');
             renderDashboardDateLineChart('dashDailyLineChart', filteredRecords, 'Nenhuma data válida encontrada no recorte atual.');
@@ -2281,7 +2455,8 @@
                     { key: 'hours', label: 'Horas', unit: 'H', color: '#2563eb' },
                     { key: 'fuel', label: 'Combustível', unit: 'L', color: '#f59e0b' },
                     { key: 'operatorCost', label: 'Operador', unit: 'R$', color: '#059669' },
-                    { key: 'fuelCost', label: 'Diesel', unit: 'R$', color: '#f43f5e' }
+                    { key: 'fuelCost', label: 'Diesel', unit: 'R$', color: '#f43f5e' },
+                    { key: 'depreciationCost', label: 'Depreciação', unit: 'R$', color: '#7c3aed' }
                 ]
             );
             renderDashboardBlockCostTable('dashLocationsCostRows', Object.values(groupRecordsByField(filteredRecords, 'local')), 'Nenhum local encontrado.');
@@ -2289,6 +2464,7 @@
             renderDashboardCostTable('dashServicesCostRows', serviceGroups, 'Nenhum serviço encontrado.');
             renderDashboardServiceHourlyRateTable('dashServiceHourlyRateRows', serviceGroups, 'Nenhum serviço encontrado.');
             renderDashboardServiceShareChart('dashServiceShare', serviceGroups, 'Nenhum serviço encontrado.');
+            renderDashboardExecutiveSummary(serviceGroups, filteredRecords.length, allRecords.length);
 
             const rows = totals.recentRows || [];
             if (rowsInfo) rowsInfo.textContent = `${rows.length} registro(s) exibido(s) de ${allRecords.length} total`;
@@ -2349,6 +2525,7 @@
                 totalCombustivelValue: 0,
                 totalOperatorCostValue: 0,
                 totalFuelCostValue: 0,
+                totalDepreciationCostValue: 0,
                 byServiceHours: [],
                 byLocationHours: [],
                 recentRows: []
@@ -2363,6 +2540,7 @@
                 summary.totalCombustivelValue += parseDashboardNumber(record.combustivelValue);
                 summary.totalOperatorCostValue += parseDashboardNumber(record.operatorCostValue);
                 summary.totalFuelCostValue += calculateRecordFuelCost(record);
+                summary.totalDepreciationCostValue += parseDashboardNumber(record.depreciationCostValue);
                 const serviceKey = record.service || 'Não informado';
                 const locationKey = record.local || 'Não informado';
                 serviceHours[serviceKey] = (serviceHours[serviceKey] || 0) + hmHours;
@@ -2392,7 +2570,7 @@
                 return filtered.slice().sort((a, b) => selector(a) - selector(b))[0];
             };
 
-            const locationCost = item => (item.operatorCost || 0) + (item.fuelCost || 0);
+            const locationCost = item => (item.operatorCost || 0) + (item.fuelCost || 0) + (item.depreciationCost || 0);
             const localHighestCost = pickHighest(groupedLocations, locationCost);
             const localLowestCost = pickLowest(groupedLocations, locationCost);
             const localHighestHours = pickHighest(groupedLocations, item => item.hours || 0);
@@ -2403,7 +2581,7 @@
             const serviceHighestCost = pickHighest(groupedServices, locationCost);
 
             const topHoursAvg = totals.totalHMValue > 0 ? (totals.totalHMValue / Math.max(totals.totalRegistros, 1)) : 0;
-            const totalEstimatedCost = totals.totalOperatorCostValue + totals.totalFuelCostValue;
+            const totalEstimatedCost = totals.totalOperatorCostValue + totals.totalFuelCostValue + (totals.totalDepreciationCostValue || 0);
 
             const summaryCards = [
                 {
@@ -2496,23 +2674,31 @@
                         label: key,
                         cycles: [],
                         cycleSet: new Set(),
+                        implements: [],
+                        implementSet: new Set(),
                         hours: 0,
                         fuel: 0,
                         operatorCost: 0,
-                        fuelCost: 0
+                        fuelCost: 0,
+                        depreciationCost: 0
                     };
                 }
                 const cycle = record.cycle || '';
                 if (cycle) grouped[key].cycleSet.add(cycle);
+                const implemento = record.implemento || '';
+                if (implemento && implemento !== 'Não informado') grouped[key].implementSet.add(implemento);
                 grouped[key].hours += parseDashboardNumber(record.hmHours);
                 grouped[key].fuel += parseDashboardNumber(record.combustivelValue);
                 grouped[key].operatorCost += parseDashboardNumber(record.operatorCostValue);
                 grouped[key].fuelCost += parseDashboardNumber(record.fuelCostValue);
+                grouped[key].depreciationCost += parseDashboardNumber(record.depreciationCostValue);
             });
 
             Object.values(grouped).forEach(item => {
                 item.cycles = Array.from(item.cycleSet).sort((a, b) => a.localeCompare(b, 'pt-BR'));
                 delete item.cycleSet;
+                item.implements = Array.from(item.implementSet).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+                delete item.implementSet;
             });
 
             return grouped;
@@ -2669,6 +2855,59 @@
             }
         }
 
+        function renderDashboardExecutiveSummary(serviceGroups, filteredCount, totalCount) {
+            const container = document.getElementById('dashboardExecutiveCards');
+            const context = document.getElementById('dashboardExecutiveContext');
+
+            if (context) {
+                const periodLabel = getDashboardPeriodDisplayLabel();
+                context.textContent = filteredCount === totalCount
+                    ? `Baseado em todos os ${totalCount} registro(s) da planilha (sem filtro de período aplicado).`
+                    : `Baseado em ${filteredCount} de ${totalCount} registro(s), com o filtro "${periodLabel}" aplicado na Visão Geral.`;
+            }
+
+            if (!container) return;
+
+            const items = (serviceGroups || []).map(item => {
+                const totalCost = (item.operatorCost || 0) + (item.fuelCost || 0) + (item.depreciationCost || 0);
+                const hourlyRate = item.hours > 0 ? (totalCost / item.hours) : 0;
+                return {
+                    label: item.label || 'Sem nome',
+                    hourlyRate: hourlyRate,
+                    totalCost: totalCost,
+                    implementsText: Array.isArray(item.implements) && item.implements.length
+                        ? item.implements.join(', ')
+                        : 'Não informado'
+                };
+            });
+
+            if (!items.length) {
+                container.innerHTML = `<div class="sm:col-span-2 xl:col-span-3 text-sm text-slate-500 bg-slate-50 border border-dashed border-slate-200 rounded-xl p-4">Nenhum serviço encontrado no recorte atual.</div>`;
+                return;
+            }
+
+            const grandTotalCost = items.reduce((sum, item) => sum + item.totalCost, 0);
+
+            container.innerHTML = items
+                .sort((a, b) => b.totalCost - a.totalCost)
+                .map(item => {
+                    const percent = grandTotalCost > 0 ? (item.totalCost / grandTotalCost) * 100 : 0;
+                    return `
+                        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="text-sm font-black text-slate-800">${escapeHtmlDashboard(item.label)}</div>
+                                ${percent > 0 ? `<span class="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">${formatDashboardPercent(percent)} do total</span>` : ''}
+                            </div>
+                            <div class="mt-2 text-[11px] text-slate-500">Implemento utilizado: <span class="font-semibold text-slate-700">${escapeHtmlDashboard(item.implementsText)}</span></div>
+                            <div class="mt-3 text-2xl font-black text-slate-900">${item.hourlyRate > 0 ? formatCurrencyBR(item.hourlyRate) : '-'}</div>
+                            <div class="text-[10px] uppercase tracking-[0.14em] text-slate-400 font-bold">custo por hora</div>
+                            <div class="mt-3 pt-3 border-t border-slate-100 text-sm font-bold text-slate-700">${item.totalCost > 0 ? formatCurrencyBR(item.totalCost) : '-'}</div>
+                            <div class="text-[10px] uppercase tracking-[0.14em] text-slate-400 font-bold">gasto total no recorte atual</div>
+                        </div>
+                    `;
+                }).join('');
+        }
+
         function syncDashboardDailyLineLabelsButton() {
             const buttonText = document.getElementById('dashDailyLineLabelsBtnText');
             if (buttonText) {
@@ -2701,7 +2940,7 @@
                 }
 
                 grouped[dateIso].hours += parseDashboardNumber(record.hmHours);
-                grouped[dateIso].estimatedCost += parseDashboardNumber(record.operatorCostValue) + parseDashboardNumber(record.fuelCostValue);
+                grouped[dateIso].estimatedCost += parseDashboardNumber(record.operatorCostValue) + parseDashboardNumber(record.fuelCostValue) + parseDashboardNumber(record.depreciationCostValue);
             });
 
             return Object.values(grouped).sort((a, b) => a.dateIso.localeCompare(b.dateIso));
@@ -2956,6 +3195,58 @@
             `;
         }
 
+        function renderDashboardOperatorsReferenceTable(tbodyId, items, emptyMessage) {
+            const tbody = document.getElementById(tbodyId);
+            if (!tbody) return;
+
+            if (!Array.isArray(items) || items.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="p-4 text-center text-slate-500">${escapeHtmlDashboard(emptyMessage)}</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = items
+                .slice()
+                .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'))
+                .map(item => `
+                    <tr class="align-top">
+                        <td class="p-3 font-bold text-slate-700">${escapeHtmlDashboard(item.nome || 'Sem nome')}</td>
+                        <td class="p-3 whitespace-nowrap">${escapeHtmlDashboard(item.salario || '-')}</td>
+                        <td class="p-3 whitespace-nowrap">${escapeHtmlDashboard(item.custoHora || '-')}</td>
+                    </tr>
+                `).join('');
+        }
+
+        function renderDashboardMachinesReferenceTable(tbodyId, items, emptyMessage) {
+            const tbody = document.getElementById(tbodyId);
+            if (!tbody) return;
+
+            if (!Array.isArray(items) || items.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="p-4 text-center text-slate-500">${escapeHtmlDashboard(emptyMessage)}</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = items
+                .slice()
+                .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'))
+                .map(item => `
+                    <tr class="align-top">
+                        <td class="p-3 font-bold text-slate-700">${escapeHtmlDashboard(item.nome || 'Sem nome')}</td>
+                        <td class="p-3 whitespace-nowrap">${escapeHtmlDashboard(item.valorCompra || '-')}</td>
+                        <td class="p-3 whitespace-nowrap">${escapeHtmlDashboard(item.vidaUtil || '-')}</td>
+                        <td class="p-3 whitespace-nowrap">${escapeHtmlDashboard(item.valorResidual || '-')}</td>
+                        <td class="p-3 whitespace-nowrap">${escapeHtmlDashboard(item.custoHora || '-')}</td>
+                    </tr>
+                `).join('');
+        }
+
         function toSortedHoursList(map, limit) {
             return Object.keys(map)
                 .map(label => ({ label: label, hours: map[label] }))
@@ -2970,7 +3261,7 @@
             if (!Array.isArray(items) || items.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="p-4 text-center text-slate-500">${escapeHtmlDashboard(emptyMessage)}</td>
+                        <td colspan="8" class="p-4 text-center text-slate-500">${escapeHtmlDashboard(emptyMessage)}</td>
                     </tr>
                 `;
                 return;
@@ -2984,7 +3275,8 @@
                     const fuel = item.fuel || 0;
                     const operatorCost = item.operatorCost || 0;
                     const fuelCost = item.fuelCost || 0;
-                    const estimatedCost = operatorCost + fuelCost;
+                    const depreciationCost = item.depreciationCost || 0;
+                    const estimatedCost = operatorCost + fuelCost + depreciationCost;
                     const cycleText = Array.isArray(item.cycles) && item.cycles.length ? item.cycles.join(', ') : '-';
                     return `
                         <tr class="align-top">
@@ -2994,6 +3286,7 @@
                             <td class="p-3 whitespace-nowrap">${fuel > 0 ? `${formatDisplayHM(fuel)} litros` : '-'}</td>
                             <td class="p-3 whitespace-nowrap">${operatorCost > 0 ? formatCurrencyBR(operatorCost) : '-'}</td>
                             <td class="p-3 whitespace-nowrap">${fuelCost > 0 ? formatCurrencyBR(fuelCost) : '-'}</td>
+                            <td class="p-3 whitespace-nowrap">${depreciationCost > 0 ? formatCurrencyBR(depreciationCost) : '-'}</td>
                             <td class="p-3 whitespace-nowrap">${estimatedCost > 0 ? formatCurrencyBR(estimatedCost) : '-'}</td>
                         </tr>
                     `;
@@ -3007,7 +3300,7 @@
             if (!Array.isArray(items) || items.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="p-4 text-center text-slate-500">${escapeHtmlDashboard(emptyMessage)}</td>
+                        <td colspan="7" class="p-4 text-center text-slate-500">${escapeHtmlDashboard(emptyMessage)}</td>
                     </tr>
                 `;
                 return;
@@ -3016,8 +3309,8 @@
             tbody.innerHTML = items
                 .slice()
                 .sort((a, b) => {
-                    const costA = (a.operatorCost || 0) + (a.fuelCost || 0);
-                    const costB = (b.operatorCost || 0) + (b.fuelCost || 0);
+                    const costA = (a.operatorCost || 0) + (a.fuelCost || 0) + (a.depreciationCost || 0);
+                    const costB = (b.operatorCost || 0) + (b.fuelCost || 0) + (b.depreciationCost || 0);
                     if (costB !== costA) return costB - costA;
                     return (b.hours || 0) - (a.hours || 0);
                 })
@@ -3026,7 +3319,8 @@
                     const fuel = item.fuel || 0;
                     const operatorCost = item.operatorCost || 0;
                     const fuelCost = item.fuelCost || 0;
-                    const estimatedCost = operatorCost + fuelCost;
+                    const depreciationCost = item.depreciationCost || 0;
+                    const estimatedCost = operatorCost + fuelCost + depreciationCost;
                     return `
                         <tr class="align-top">
                             <td class="p-3 font-bold text-slate-700">${escapeHtmlDashboard(item.label || 'Sem nome')}</td>
@@ -3034,6 +3328,7 @@
                             <td class="p-3 whitespace-nowrap">${fuel > 0 ? `${formatDisplayHM(fuel)} litros` : '-'}</td>
                             <td class="p-3 whitespace-nowrap">${operatorCost > 0 ? formatCurrencyBR(operatorCost) : '-'}</td>
                             <td class="p-3 whitespace-nowrap">${fuelCost > 0 ? formatCurrencyBR(fuelCost) : '-'}</td>
+                            <td class="p-3 whitespace-nowrap">${depreciationCost > 0 ? formatCurrencyBR(depreciationCost) : '-'}</td>
                             <td class="p-3 whitespace-nowrap">${estimatedCost > 0 ? formatCurrencyBR(estimatedCost) : '-'}</td>
                         </tr>
                     `;
@@ -3058,7 +3353,7 @@
                 .sort((a, b) => (a.label || '').localeCompare(b.label || '', 'pt-BR'))
                 .map(item => {
                     const hours = item.hours || item.count || 0;
-                    const estimatedCost = (item.operatorCost || 0) + (item.fuelCost || 0);
+                    const estimatedCost = (item.operatorCost || 0) + (item.fuelCost || 0) + (item.depreciationCost || 0);
                     const hourlyRate = hours > 0 ? (estimatedCost / hours) : 0;
                     return `
                         <tr class="align-top">
@@ -3181,7 +3476,7 @@
                 }
 
                 iframeDoc.open();
-                iframeDoc.write('<!doctype html><html><head><meta charset="utf-8"></head><body></body></html>');
+                iframeDoc.write('<!doctype html><html><head><meta charset="utf-8"></head><body></' + 'body></html>');
                 iframeDoc.close();
 
                 iframeDoc.documentElement.style.width = `${exportWidth}px`;
